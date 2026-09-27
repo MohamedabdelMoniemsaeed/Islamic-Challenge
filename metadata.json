@@ -1,0 +1,6 @@
+{
+  "name": "Islamic Challenge",
+  "description": "An elegant educational Islamic quiz game featuring Quran, Seerah, Prophets, Worship, Ramadan, Adhkar, Manners, and General Knowledge with progression, streaks, and lifelines.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
