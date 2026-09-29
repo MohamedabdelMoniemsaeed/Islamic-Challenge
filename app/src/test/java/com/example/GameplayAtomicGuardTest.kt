@@ -212,8 +212,16 @@ class GameplayAtomicGuardTest {
 
     // Status of Q1 in questionStatuses must be SKIPPED
     assertEquals(QuestionStatus.SKIPPED, vm.questionStatuses.value[q1Id])
+    assertEquals(QuestionStatus.SKIPPED, vm.currentQuestionStatus.value)
 
-    // Current index has moved to 1, previous question ID is recorded as SKIPPED
+    // With manual Next button, question remains at index 0 until user taps Next
+    assertEquals(0, vm.currentIndex.value)
+    val answerSubmitted = vm.submitAnswer(q1.correctAnswerIndex, soundEnabled = false, vibrationEnabled = false)
+    assertFalse("Answer must be rejected after skip", answerSubmitted)
+
+    // Manual next button progresses to question 1
+    val advanced = vm.nextQuestion()
+    assertTrue(advanced)
     assertEquals(1, vm.currentIndex.value)
     assertEquals(0, vm.correctAnswersCount.value)
   }
@@ -363,8 +371,13 @@ class GameplayAtomicGuardTest {
    * When submitAnswer() is called, auto-advance automatically transitions to the next question
    * after the scheduled delay without requiring manual interaction.
    */
+  /**
+   * Regression Test: Manual Next Button (No auto-advance)
+   * After answering, question does NOT advance automatically even after time passes.
+   * Only advances when nextQuestion() is manually invoked.
+   */
   @Test
-  fun test11_autoAdvanceTransitionsAutomatically() = runTest(testScheduler) {
+  fun test11_noAutoAdvance_requiresManualNext() = runTest(testScheduler) {
     val vm = QuizViewModel(questionRepository, playerRepository, audioManager)
     vm.startQuiz(GameMode.QUICK_CHALLENGE)
 
@@ -372,15 +385,19 @@ class GameplayAtomicGuardTest {
     val q = vm.currentQuestion!!
     vm.submitAnswer(q.correctAnswerIndex, soundEnabled = false, vibrationEnabled = false)
 
-    assertTrue("Auto-advancing flag must be true during delay", vm.isAutoAdvancing.value)
-    assertEquals("Still at index 0 before delay", 0, vm.currentIndex.value)
+    assertFalse("Auto-advancing must be false", vm.isAutoAdvancing.value)
+    assertEquals("Still at index 0 after answering", 0, vm.currentIndex.value)
 
-    // Advance virtual time by 1600ms
-    advanceTimeBy(1650L)
+    // Advance virtual time by 5000ms - must remain at index 0!
+    advanceTimeBy(5000L)
     testScheduler.runCurrent()
 
-    assertEquals("Must automatically advance to index 1 after 1600ms", 1, vm.currentIndex.value)
-    assertFalse("Auto-advancing flag must reset", vm.isAutoAdvancing.value)
+    assertEquals("Must NOT automatically advance to index 1 after delay", 0, vm.currentIndex.value)
+
+    // Manual tap on Next
+    val advanced = vm.nextQuestion()
+    assertTrue("Manual next must succeed", advanced)
+    assertEquals("Must advance to index 1 after manual next", 1, vm.currentIndex.value)
     assertFalse("New question must not be locked", vm.isAnswerLocked.value)
     assertEquals(QuestionStatus.UNANSWERED, vm.currentQuestionStatus.value)
   }

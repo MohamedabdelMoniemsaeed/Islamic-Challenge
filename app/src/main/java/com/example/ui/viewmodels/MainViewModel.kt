@@ -30,6 +30,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
   val playerRepository = PlayerRepository(database.playerDao())
   val questionRepository = QuestionRepository()
   val audioManager = AudioFeedbackManager(application)
+  val notificationManager = com.example.core.notification.AppNotificationManager(application)
 
   val playerProfile: StateFlow<PlayerProfile> = playerRepository.playerProfileFlow
     .stateIn(
@@ -73,6 +74,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
   private val _isDarkMode = MutableStateFlow<Boolean?>(null) // null = system
   val isDarkMode: StateFlow<Boolean?> = _isDarkMode.asStateFlow()
 
+  private val _notificationsEnabled = MutableStateFlow(true)
+  val notificationsEnabled: StateFlow<Boolean> = _notificationsEnabled.asStateFlow()
+
+  private val _showInAppBanner = MutableStateFlow(false)
+  val showInAppBanner: StateFlow<Boolean> = _showInAppBanner.asStateFlow()
+
   private val _claimedRewardMessage = MutableStateFlow<DailyRewardDay?>(null)
   val claimedRewardMessage: StateFlow<DailyRewardDay?> = _claimedRewardMessage.asStateFlow()
 
@@ -86,7 +93,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
       _soundVolume.value = settings.soundVolume
       _language.value = settings.toLanguage()
       _isDarkMode.value = settings.toDarkModeBoolean()
+      _notificationsEnabled.value = settings.notificationsEnabled
+      _showInAppBanner.value = settings.showInAppBanner
       audioManager.updateVolume(settings.soundVolume)
+
+      if (settings.notificationsEnabled) {
+        notificationManager.scheduleDailyReminder()
+      }
     }
   }
 
@@ -123,6 +136,26 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     persistSettings()
   }
 
+  fun toggleNotifications(enabled: Boolean) {
+    _notificationsEnabled.value = enabled
+    if (enabled) {
+      notificationManager.scheduleDailyReminder()
+    } else {
+      notificationManager.cancelDailyReminder()
+    }
+    persistSettings()
+  }
+
+  fun toggleInAppBanner(show: Boolean) {
+    _showInAppBanner.value = show
+    persistSettings()
+  }
+
+  fun sendTestNotification() {
+    val isAr = _language.value == AppLanguage.ARABIC
+    notificationManager.sendTestNotification(isAr)
+  }
+
   private fun persistSettings() {
     viewModelScope.launch {
       val entity = UserSettingsEntity.fromPreferences(
@@ -131,7 +164,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         vibration = _vibrationEnabled.value,
         volume = _soundVolume.value,
         darkMode = _isDarkMode.value,
-        language = _language.value
+        language = _language.value,
+        notificationsEnabled = _notificationsEnabled.value,
+        showInAppBanner = _showInAppBanner.value
       )
       playerRepository.updateUserSettings(entity)
     }

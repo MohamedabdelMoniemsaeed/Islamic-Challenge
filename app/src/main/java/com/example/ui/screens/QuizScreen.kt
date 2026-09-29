@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.RepeatMode
@@ -17,11 +18,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -54,6 +59,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -76,6 +82,7 @@ import com.example.data.models.GameMode
 import com.example.data.models.LifelineType
 import com.example.data.models.PlayerProfile
 import com.example.data.models.Question
+import com.example.data.models.QuestionStatus
 import com.example.ui.theme.EmeraldDark
 import com.example.ui.theme.EmeraldPrimary
 import com.example.ui.theme.GoldAccent
@@ -102,7 +109,8 @@ fun QuizScreen(
   val selectedOptionIndex by quizViewModel.selectedOptionIndex.collectAsState()
   val isAnswerSubmitted by quizViewModel.isAnswerSubmitted.collectAsState()
   val isAnswerLocked by quizViewModel.isAnswerLocked.collectAsState()
-  val isAutoAdvancing by quizViewModel.isAutoAdvancing.collectAsState()
+  val currentQuestionStatus by quizViewModel.currentQuestionStatus.collectAsState()
+  val questionStatuses by quizViewModel.questionStatuses.collectAsState()
   val isTimeExpired by quizViewModel.isTimeExpired.collectAsState()
   val isPaused by quizViewModel.isPaused.collectAsState()
   val eliminatedOptions by quizViewModel.eliminatedOptions.collectAsState()
@@ -113,16 +121,32 @@ fun QuizScreen(
   val lastEarnedCoins by quizViewModel.lastEarnedCoins.collectAsState()
   val quizFinished by quizViewModel.quizFinished.collectAsState()
 
-  val isLocked = isAnswerLocked || isAnswerSubmitted || isTimeExpired
-
-  var showExitConfirmDialog by remember { mutableStateOf(false) }
-
-  if (quizFinished) {
-    onQuizFinished()
+  val currentQuestion = quizViewModel.currentQuestion
+  if (quizFinished || currentQuestion == null) {
+    if (quizFinished) {
+      LaunchedEffect(quizFinished) {
+        onQuizFinished()
+      }
+    }
     return
   }
 
-  val currentQuestion = quizViewModel.currentQuestion ?: return
+  val thisQuestionStatus = questionStatuses[currentQuestion.id] ?: currentQuestionStatus
+  val isQuestionResolved = isAnswerSubmitted || isTimeExpired || thisQuestionStatus != QuestionStatus.UNANSWERED
+  val isLocked = isAnswerLocked || isAnswerSubmitted || isTimeExpired || thisQuestionStatus != QuestionStatus.UNANSWERED
+
+  var showExitConfirmDialog by remember { mutableStateOf(false) }
+
+  BackHandler {
+    quizViewModel.pauseQuiz()
+    showExitConfirmDialog = true
+  }
+
+  LaunchedEffect(quizFinished) {
+    if (quizFinished) {
+      onQuizFinished()
+    }
+  }
 
   Scaffold(
     topBar = {
@@ -151,7 +175,10 @@ fun QuizScreen(
         actions = {
           // Pause Button
           IconButton(
-            onClick = { quizViewModel.pauseQuiz() },
+            onClick = {
+              showExitConfirmDialog = false
+              quizViewModel.pauseQuiz()
+            },
             modifier = Modifier.testTag("quiz_pause_btn")
           ) {
             Icon(
@@ -178,9 +205,12 @@ fun QuizScreen(
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
           containerColor = MaterialTheme.colorScheme.surface
-        )
+        ),
+        windowInsets = TopAppBarDefaults.windowInsets
       )
-    }
+    },
+    containerColor = MaterialTheme.colorScheme.background,
+    contentWindowInsets = WindowInsets.navigationBars
   ) { paddingValues ->
     Column(
       modifier = Modifier
@@ -236,23 +266,27 @@ fun QuizScreen(
         )
       }
 
-      // 5. Answer Interaction & Feedback (Short, calm animation with rewards or correction)
+      // 5. Answer Interaction & Feedback (Manual Next Button, no auto-advance)
       AnimatedVisibility(
-        visible = isAnswerSubmitted,
+        visible = isQuestionResolved,
         enter = fadeIn(animationSpec = tween(220)) + slideInVertically(
           animationSpec = tween(220),
           initialOffsetY = { it / 3 }
         )
       ) {
+        val isTerminalInSurvival = quizViewModel.currentMode == GameMode.SURVIVAL_MODE &&
+          (currentQuestionStatus == QuestionStatus.ANSWERED_WRONG || currentQuestionStatus == QuestionStatus.EXPIRED || isTimeExpired)
+        val isLast = currentIndex >= questions.size - 1 || isTerminalInSurvival
+
         AnswerFeedbackSection(
           question = currentQuestion,
           isArabic = isAr,
           selectedIndex = selectedOptionIndex,
+          currentQuestionStatus = currentQuestionStatus,
           isTimeExpired = isTimeExpired,
-          isAutoAdvancing = isAutoAdvancing,
           earnedXp = lastEarnedXp,
           earnedCoins = lastEarnedCoins,
-          isLastQuestion = currentIndex == questions.size - 1,
+          isLastQuestion = isLast,
           strings = strings,
           onNext = { quizViewModel.nextQuestion() }
         )
@@ -262,60 +296,27 @@ fun QuizScreen(
     }
   }
 
-  // Pause Overlay Dialog
-  if (isPaused && !showExitConfirmDialog) {
+  // Unified Pause / Exit Dialog to prevent window recreation & screen flicker
+  if (isPaused || showExitConfirmDialog) {
     PauseOverlayDialog(
       strings = strings,
-      onResume = { quizViewModel.resumeQuiz() },
-      onRestart = { quizViewModel.restartRound() },
-      onExitClick = { showExitConfirmDialog = true }
-    )
-  }
-
-  // Exit Confirmation Dialog
-  if (showExitConfirmDialog) {
-    AlertDialog(
-      onDismissRequest = {
+      initialShowConfirm = showExitConfirmDialog,
+      onResume = {
         showExitConfirmDialog = false
-        if (isPaused) {
-          // Keep paused or allow resume
-        }
+        quizViewModel.resumeQuiz()
       },
-      title = {
-        Text(
-          text = strings.exitConfirmTitle,
-          fontWeight = FontWeight.Bold
-        )
+      onRestart = {
+        showExitConfirmDialog = false
+        quizViewModel.restartRound()
       },
-      text = {
-        Text(
-          text = strings.exitConfirmDesc,
-          fontSize = 14.sp,
-          lineHeight = 20.sp
-        )
+      onConfirmExit = {
+        showExitConfirmDialog = false
+        quizViewModel.exitQuiz()
+        onExit()
       },
-      confirmButton = {
-        Button(
-          onClick = {
-            showExitConfirmDialog = false
-            quizViewModel.pauseTimer()
-            onExit()
-          },
-          colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444)),
-          modifier = Modifier.testTag("confirm_quiz_exit_btn")
-        ) {
-          Text(text = strings.exitQuiz, color = Color.White)
-        }
-      },
-      dismissButton = {
-        TextButton(
-          onClick = {
-            showExitConfirmDialog = false
-            quizViewModel.resumeQuiz()
-          }
-        ) {
-          Text(text = strings.cancel)
-        }
+      onDismiss = {
+        showExitConfirmDialog = false
+        quizViewModel.resumeQuiz()
       }
     )
   }
@@ -364,16 +365,21 @@ private fun QuizHeaderMetrics(
 ) {
   val isWarning = remainingSeconds in 1..5
 
-  val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-  val warningAlpha by infiniteTransition.animateFloat(
-    initialValue = 0.5f,
-    targetValue = 1f,
-    animationSpec = infiniteRepeatable(
-      animation = tween(400),
-      repeatMode = RepeatMode.Reverse
-    ),
-    label = "warningAlpha"
-  )
+  val warningAlpha = if (isWarning) {
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val alpha by infiniteTransition.animateFloat(
+      initialValue = 0.5f,
+      targetValue = 1f,
+      animationSpec = infiniteRepeatable(
+        animation = tween(400),
+        repeatMode = RepeatMode.Reverse
+      ),
+      label = "warningAlpha"
+    )
+    alpha
+  } else {
+    1f
+  }
 
   Column(
     modifier = Modifier
@@ -507,7 +513,7 @@ private fun OptionsSection(
   eliminatedIndices: Set<Int>,
   onSelectOption: (Int) -> Unit
 ) {
-  val options = question.getOptions(isArabic)
+  val options = remember(question.id, isArabic) { question.getOptions(isArabic) }
 
   Column(
     modifier = Modifier
@@ -528,7 +534,7 @@ private fun OptionsSection(
         isLocked = isLocked,
         isCorrect = isCorrect,
         isEliminated = isEliminated,
-        onSelect = { onSelectOption(index) }
+        onSelect = remember(index, onSelectOption) { { onSelectOption(index) } }
       )
     }
   }
@@ -571,14 +577,17 @@ private fun OptionItemCard(
     else -> "د"
   }
 
+  val isClickable = !isLocked && !isSubmitted && !isEliminated
+
   Card(
+    onClick = onSelect,
+    enabled = isClickable,
     shape = RoundedCornerShape(16.dp),
     colors = CardDefaults.cardColors(containerColor = targetColor),
     border = BorderStroke(1.5.dp, borderColor),
     elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 3.dp else 1.dp),
     modifier = Modifier
       .fillMaxWidth()
-      .clickable(enabled = !isLocked && !isSubmitted && !isEliminated) { onSelect() }
       .testTag("quiz_option_$index")
   ) {
     Row(
@@ -587,24 +596,26 @@ private fun OptionItemCard(
         .padding(horizontal = 16.dp, vertical = 14.dp),
       verticalAlignment = Alignment.CenterVertically
     ) {
-      Surface(
-        shape = CircleShape,
-        color = when {
-          isSubmitted && isCorrect -> Color(0xFF22C55E)
-          isSubmitted && isSelected && !isCorrect -> Color(0xFFEF4444)
-          isSelected -> EmeraldPrimary
-          else -> MaterialTheme.colorScheme.surfaceVariant
-        },
-        modifier = Modifier.size(32.dp)
+      Box(
+        modifier = Modifier
+          .size(32.dp)
+          .background(
+            color = when {
+              isSubmitted && isCorrect -> Color(0xFF22C55E)
+              isSubmitted && isSelected && !isCorrect -> Color(0xFFEF4444)
+              isSelected -> EmeraldPrimary
+              else -> MaterialTheme.colorScheme.surfaceVariant
+            },
+            shape = CircleShape
+          ),
+        contentAlignment = Alignment.Center
       ) {
-        Box(contentAlignment = Alignment.Center) {
-          Text(
-            text = optionLetter,
-            fontWeight = FontWeight.Bold,
-            fontSize = 13.sp,
-            color = if (isSelected || (isSubmitted && isCorrect)) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-          )
-        }
+        Text(
+          text = optionLetter,
+          fontWeight = FontWeight.Bold,
+          fontSize = 13.sp,
+          color = if (isSelected || (isSubmitted && isCorrect)) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+        )
       }
 
       Spacer(modifier = Modifier.width(14.dp))
@@ -729,24 +740,34 @@ private fun AnswerFeedbackSection(
   question: Question,
   isArabic: Boolean,
   selectedIndex: Int?,
+  currentQuestionStatus: QuestionStatus,
   isTimeExpired: Boolean,
-  isAutoAdvancing: Boolean = false,
   earnedXp: Int,
   earnedCoins: Int,
   isLastQuestion: Boolean,
   strings: com.example.core.localization.AppStrings,
   onNext: () -> Unit
 ) {
-  val isCorrect = selectedIndex == question.correctAnswerIndex && !isTimeExpired
+  val isCorrect = currentQuestionStatus == QuestionStatus.ANSWERED_CORRECT
+  val isSkipped = currentQuestionStatus == QuestionStatus.SKIPPED
+  val isExpired = currentQuestionStatus == QuestionStatus.EXPIRED || isTimeExpired
 
   Card(
     shape = RoundedCornerShape(20.dp),
     colors = CardDefaults.cardColors(
-      containerColor = if (isCorrect) Color(0xFFF0FDF4) else Color(0xFFFFF1F2)
+      containerColor = when {
+        isCorrect -> Color(0xFFF0FDF4)
+        isSkipped -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        else -> Color(0xFFFFF1F2)
+      }
     ),
     border = BorderStroke(
       1.dp,
-      if (isCorrect) Color(0xFF86EFAC) else Color(0xFFFECDD3)
+      when {
+        isCorrect -> Color(0xFF86EFAC)
+        isSkipped -> EmeraldPrimary.copy(alpha = 0.4f)
+        else -> Color(0xFFFECDD3)
+      }
     ),
     modifier = Modifier
       .fillMaxWidth()
@@ -762,19 +783,34 @@ private fun AnswerFeedbackSection(
       ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
           Icon(
-            imageVector = if (isCorrect) Icons.Filled.Check else Icons.Filled.Close,
+            imageVector = when {
+              isCorrect -> Icons.Filled.Check
+              isSkipped -> Icons.Filled.Info
+              else -> Icons.Filled.Close
+            },
             contentDescription = null,
-            tint = if (isCorrect) Color(0xFF15803D) else Color(0xFFBE123C),
+            tint = when {
+              isCorrect -> Color(0xFF15803D)
+              isSkipped -> EmeraldPrimary
+              else -> Color(0xFFBE123C)
+            },
             modifier = Modifier.size(22.dp)
           )
           Spacer(modifier = Modifier.width(8.dp))
           Text(
-            text = if (isTimeExpired) strings.timeUpAlert
-                   else if (isCorrect) strings.correctAlert
-                   else strings.incorrectAlert,
+            text = when {
+              isExpired -> strings.timeUpAlert
+              isSkipped -> if (isArabic) "تم تخطي السؤال" else "Question Skipped"
+              isCorrect -> strings.correctAlert
+              else -> strings.incorrectAlert
+            },
             fontWeight = FontWeight.Bold,
             fontSize = 15.sp,
-            color = if (isCorrect) Color(0xFF15803D) else Color(0xFFBE123C)
+            color = when {
+              isCorrect -> Color(0xFF15803D)
+              isSkipped -> EmeraldPrimary
+              else -> Color(0xFFBE123C)
+            }
           )
         }
 
@@ -809,7 +845,7 @@ private fun AnswerFeedbackSection(
         }
       }
 
-      // If wrong, show correct answer clearly
+      // If wrong, expired, or skipped, show correct answer clearly
       if (!isCorrect) {
         Spacer(modifier = Modifier.height(10.dp))
         val correctOptionText = question.getOptions(isArabic).getOrNull(question.correctAnswerIndex) ?: ""
@@ -860,15 +896,16 @@ private fun AnswerFeedbackSection(
 
       Spacer(modifier = Modifier.height(16.dp))
 
+      // Manual Next Button — touch target >= 48dp (52dp actual), clearly prominent and accessible
       Button(
         onClick = onNext,
         colors = ButtonDefaults.buttonColors(
-          containerColor = if (isCorrect) EmeraldPrimary else Color(0xFFBE123C)
+          containerColor = if (isCorrect || isSkipped) EmeraldPrimary else Color(0xFFBE123C)
         ),
         shape = RoundedCornerShape(14.dp),
         modifier = Modifier
           .fillMaxWidth()
-          .height(48.dp)
+          .height(52.dp)
           .testTag("quiz_next_action_btn")
       ) {
         Text(
@@ -877,22 +914,6 @@ private fun AnswerFeedbackSection(
           fontSize = 16.sp
         )
       }
-
-      if (isAutoAdvancing) {
-        Spacer(modifier = Modifier.height(8.dp))
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.Center,
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Text(
-            text = if (isArabic) "الانتقال التلقائي..." else "Auto-advancing...",
-            fontSize = 12.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f),
-            fontWeight = FontWeight.Medium
-          )
-        }
-      }
     }
   }
 }
@@ -900,96 +921,184 @@ private fun AnswerFeedbackSection(
 @Composable
 private fun PauseOverlayDialog(
   strings: com.example.core.localization.AppStrings,
+  initialShowConfirm: Boolean = false,
   onResume: () -> Unit,
   onRestart: () -> Unit,
-  onExitClick: () -> Unit
+  onConfirmExit: () -> Unit,
+  onDismiss: () -> Unit
 ) {
-  Dialog(onDismissRequest = onResume) {
-    Card(
-      shape = RoundedCornerShape(24.dp),
-      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-      elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+  var showConfirmExit by remember(initialShowConfirm) { mutableStateOf(initialShowConfirm) }
+
+  Dialog(
+    onDismissRequest = {
+      if (showConfirmExit && !initialShowConfirm) {
+        showConfirmExit = false
+      } else {
+        onDismiss()
+      }
+    },
+    properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+  ) {
+    Box(
       modifier = Modifier
-        .fillMaxWidth()
-        .padding(16.dp)
-        .testTag("pause_overlay_card")
+        .fillMaxSize()
+        .statusBarsPadding()
+        .navigationBarsPadding()
+        .padding(24.dp),
+      contentAlignment = Alignment.Center
     ) {
-      Column(
-        modifier = Modifier.padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+      Card(
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        modifier = Modifier
+          .fillMaxWidth()
+          .testTag("pause_overlay_card")
       ) {
-        Box(
-          modifier = Modifier
-            .size(56.dp)
-            .clip(CircleShape)
-            .background(EmeraldPrimary.copy(alpha = 0.12f)),
-          contentAlignment = Alignment.Center
+        Column(
+          modifier = Modifier.padding(24.dp),
+          horizontalAlignment = Alignment.CenterHorizontally
         ) {
-          Icon(
-            imageVector = Icons.Filled.Pause,
-            contentDescription = null,
-            tint = EmeraldPrimary,
-            modifier = Modifier.size(28.dp)
-          )
-        }
+          if (!showConfirmExit) {
+            Box(
+              modifier = Modifier
+                .size(56.dp)
+                .clip(CircleShape)
+                .background(EmeraldPrimary.copy(alpha = 0.12f)),
+              contentAlignment = Alignment.Center
+            ) {
+              Icon(
+                imageVector = Icons.Filled.Pause,
+                contentDescription = null,
+                tint = EmeraldPrimary,
+                modifier = Modifier.size(28.dp)
+              )
+            }
 
-        Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-        Text(
-          text = strings.pauseTitle,
-          style = MaterialTheme.typography.titleLarge,
-          fontWeight = FontWeight.Bold,
-          color = MaterialTheme.colorScheme.onSurface
-        )
+            Text(
+              text = strings.pauseTitle,
+              style = MaterialTheme.typography.titleLarge,
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colorScheme.onSurface
+            )
 
-        Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-        // Resume Button
-        Button(
-          onClick = onResume,
-          shape = RoundedCornerShape(14.dp),
-          colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
-          modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp)
-            .testTag("pause_resume_btn")
-        ) {
-          Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null)
-          Spacer(modifier = Modifier.width(8.dp))
-          Text(text = strings.resumeGame, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-        }
+            // Resume Button
+            Button(
+              onClick = onResume,
+              shape = RoundedCornerShape(14.dp),
+              colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
+              modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .testTag("pause_resume_btn")
+            ) {
+              Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = null)
+              Spacer(modifier = Modifier.width(8.dp))
+              Text(text = strings.resumeGame, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+            }
 
-        Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-        // Restart Round Button
-        OutlinedButton(
-          onClick = onRestart,
-          shape = RoundedCornerShape(14.dp),
-          modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp)
-            .testTag("pause_restart_btn")
-        ) {
-          Icon(imageVector = Icons.Filled.Refresh, contentDescription = null)
-          Spacer(modifier = Modifier.width(8.dp))
-          Text(text = strings.restartRound, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
-        }
+            // Restart Round Button
+            OutlinedButton(
+              onClick = onRestart,
+              shape = RoundedCornerShape(14.dp),
+              modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .testTag("pause_restart_btn")
+            ) {
+              Icon(imageVector = Icons.Filled.Refresh, contentDescription = null)
+              Spacer(modifier = Modifier.width(8.dp))
+              Text(text = strings.restartRound, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+            }
 
-        Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-        // Exit Button
-        TextButton(
-          onClick = onExitClick,
-          modifier = Modifier
-            .fillMaxWidth()
-            .testTag("pause_exit_btn")
-        ) {
-          Text(
-            text = strings.exitQuiz,
-            color = Color(0xFFEF4444),
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 14.sp
-          )
+            // Exit Button
+            TextButton(
+              onClick = { showConfirmExit = true },
+              modifier = Modifier
+                .fillMaxWidth()
+                .testTag("pause_exit_btn")
+            ) {
+              Text(
+                text = strings.exitQuiz,
+                color = Color(0xFFEF4444),
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 14.sp
+              )
+            }
+          } else {
+            // Inline Confirmation Mode
+            Box(
+              modifier = Modifier
+                .size(56.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFEF4444).copy(alpha = 0.12f)),
+              contentAlignment = Alignment.Center
+            ) {
+              Icon(
+                imageVector = Icons.Filled.Close,
+                contentDescription = null,
+                tint = Color(0xFFEF4444),
+                modifier = Modifier.size(28.dp)
+              )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
+              text = strings.exitConfirmTitle,
+              style = MaterialTheme.typography.titleLarge,
+              fontWeight = FontWeight.Bold,
+              color = MaterialTheme.colorScheme.onSurface,
+              textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+              text = strings.exitConfirmDesc,
+              fontSize = 14.sp,
+              lineHeight = 20.sp,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Button(
+              onClick = onConfirmExit,
+              shape = RoundedCornerShape(14.dp),
+              colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444)),
+              modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .testTag("confirm_quiz_exit_btn")
+            ) {
+              Text(text = strings.exitQuiz, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            TextButton(
+              onClick = {
+                if (initialShowConfirm) {
+                  onDismiss()
+                } else {
+                  showConfirmExit = false
+                }
+              },
+              modifier = Modifier.fillMaxWidth()
+            ) {
+              Text(text = strings.cancel, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+            }
+          }
         }
       }
     }

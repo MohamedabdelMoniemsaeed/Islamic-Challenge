@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import android.app.Activity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -11,8 +12,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -29,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,11 +40,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 import com.example.core.localization.AppLanguage
 import com.example.core.localization.LocalizationManager
 import com.example.ui.theme.CreamBackground
@@ -85,6 +91,22 @@ fun OnboardingScreen(
   val pagerState = rememberPagerState(pageCount = { pages.size })
   val scope = rememberCoroutineScope()
 
+  val view = LocalView.current
+  if (!view.isInEditMode) {
+    DisposableEffect(Unit) {
+      val window = (view.context as? Activity)?.window
+      val insetsController = window?.let { WindowCompat.getInsetsController(it, view) }
+      val originalLightStatus = insetsController?.isAppearanceLightStatusBars
+      val originalLightNav = insetsController?.isAppearanceLightNavigationBars
+      insetsController?.isAppearanceLightStatusBars = false
+      insetsController?.isAppearanceLightNavigationBars = false
+      onDispose {
+        originalLightStatus?.let { insetsController.isAppearanceLightStatusBars = it }
+        originalLightNav?.let { insetsController.isAppearanceLightNavigationBars = it }
+      }
+    }
+  }
+
   Box(
     modifier = Modifier
       .fillMaxSize()
@@ -102,7 +124,9 @@ fun OnboardingScreen(
     Column(
       modifier = Modifier
         .fillMaxSize()
-        .padding(horizontal = 24.dp, vertical = 32.dp),
+        .statusBarsPadding()
+        .navigationBarsPadding()
+        .padding(horizontal = 24.dp, vertical = 24.dp),
       horizontalAlignment = Alignment.CenterHorizontally,
       verticalArrangement = Arrangement.SpaceBetween
     ) {

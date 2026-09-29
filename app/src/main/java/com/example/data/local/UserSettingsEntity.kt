@@ -12,7 +12,9 @@ data class UserSettingsEntity(
   val vibrationEnabled: Boolean = true,
   val soundVolume: Float = 0.8f,
   val themeMode: String = "SYSTEM", // "SYSTEM", "LIGHT", "DARK"
-  val languageCode: String = "ARABIC" // "ARABIC", "ENGLISH"
+  val languageCode: String = "ARABIC", // "ARABIC", "ENGLISH"
+  val notificationsEnabled: Boolean = true,
+  val showInAppBanner: Boolean = false
 ) {
   fun toLanguage(): AppLanguage {
     return if (languageCode.equals("ENGLISH", ignoreCase = true)) {
@@ -37,7 +39,9 @@ data class UserSettingsEntity(
       vibration: Boolean,
       volume: Float,
       darkMode: Boolean?,
-      language: AppLanguage
+      language: AppLanguage,
+      notificationsEnabled: Boolean = true,
+      showInAppBanner: Boolean = false
     ): UserSettingsEntity {
       val themeStr = when (darkMode) {
         true -> "DARK"
@@ -51,7 +55,9 @@ data class UserSettingsEntity(
         vibrationEnabled = vibration,
         soundVolume = volume,
         themeMode = themeStr,
-        languageCode = language.name
+        languageCode = language.name,
+        notificationsEnabled = notificationsEnabled,
+        showInAppBanner = showInAppBanner
       )
     }
   }

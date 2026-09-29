@@ -1,14 +1,19 @@
 package com.example.ui.screens
 
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,7 +26,9 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Vibration
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -37,6 +44,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -47,6 +56,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +70,7 @@ import com.example.core.localization.LocalizationManager
 import com.example.ui.theme.EmeraldDark
 import com.example.ui.theme.EmeraldPrimary
 import com.example.ui.theme.GoldAccent
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,19 +81,33 @@ fun SettingsScreen(
   vibrationEnabled: Boolean,
   soundVolume: Float,
   isDarkMode: Boolean?,
+  notificationsEnabled: Boolean,
+  showInAppBanner: Boolean,
   onLanguageChange: (AppLanguage) -> Unit,
   onSoundToggle: (Boolean) -> Unit,
   onMusicToggle: (Boolean) -> Unit,
   onVibrationToggle: (Boolean) -> Unit,
   onSoundVolumeChange: (Float) -> Unit,
   onDarkModeToggle: (Boolean?) -> Unit,
+  onNotificationsToggle: (Boolean) -> Unit,
+  onInAppBannerToggle: (Boolean) -> Unit,
+  onSendTestNotification: () -> Unit,
   onResetProgress: () -> Unit,
   onBack: () -> Unit
 ) {
   val strings = LocalizationManager.get(currentLanguage)
   var showResetDialog by remember { mutableStateOf(false) }
+  val snackbarHostState = remember { SnackbarHostState() }
+  val scope = rememberCoroutineScope()
+
+  val permissionLauncher = rememberLauncherForActivityResult(
+    ActivityResultContracts.RequestPermission()
+  ) { isGranted ->
+    onNotificationsToggle(isGranted)
+  }
 
   Scaffold(
+    snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     topBar = {
       CenterAlignedTopAppBar(
         title = {
@@ -102,9 +127,12 @@ fun SettingsScreen(
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
           containerColor = MaterialTheme.colorScheme.surface
-        )
+        ),
+        windowInsets = TopAppBarDefaults.windowInsets
       )
-    }
+    },
+    containerColor = MaterialTheme.colorScheme.background,
+    contentWindowInsets = WindowInsets.navigationBars
   ) { paddingValues ->
     LazyColumn(
       modifier = Modifier
@@ -310,7 +338,137 @@ fun SettingsScreen(
         }
       }
 
-      // 4. Religious Accuracy & Content Safety Notice
+      // 4. External Notifications Settings (Outside App)
+      item {
+        Card(
+          shape = RoundedCornerShape(18.dp),
+          colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+          elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+          modifier = Modifier
+            .fillMaxWidth()
+            .testTag("notifications_settings_card")
+        ) {
+          Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+              Icon(
+                imageVector = Icons.Filled.Notifications,
+                contentDescription = null,
+                tint = EmeraldPrimary
+              )
+              Spacer(modifier = Modifier.width(10.dp))
+              Text(
+                text = strings.notificationsTitle,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+              )
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // 1. External Notifications Toggle (outside app)
+            Row(
+              modifier = Modifier.fillMaxWidth(),
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+              Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+                Text(
+                  text = strings.notificationsEnabled,
+                  fontWeight = FontWeight.Medium,
+                  fontSize = 15.sp
+                )
+                Text(
+                  text = strings.notificationsDesc,
+                  style = MaterialTheme.typography.bodySmall,
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
+                  lineHeight = 18.sp
+                )
+              }
+              Switch(
+                checked = notificationsEnabled,
+                onCheckedChange = { isChecked ->
+                  if (isChecked && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                  } else {
+                    onNotificationsToggle(isChecked)
+                  }
+                },
+                colors = SwitchDefaults.colors(
+                  checkedThumbColor = Color.White,
+                  checkedTrackColor = EmeraldPrimary
+                ),
+                modifier = Modifier.testTag("notifications_toggle_switch")
+              )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // 2. In-App Notification Banner Toggle (Removed from inside app by default)
+            Row(
+              modifier = Modifier.fillMaxWidth(),
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+              Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+                Text(
+                  text = strings.inAppBannerOption,
+                  fontWeight = FontWeight.Medium,
+                  fontSize = 15.sp
+                )
+                Text(
+                  text = strings.inAppBannerDesc,
+                  style = MaterialTheme.typography.bodySmall,
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
+                  lineHeight = 18.sp
+                )
+              }
+              Switch(
+                checked = showInAppBanner,
+                onCheckedChange = onInAppBannerToggle,
+                colors = SwitchDefaults.colors(
+                  checkedThumbColor = Color.White,
+                  checkedTrackColor = EmeraldPrimary
+                ),
+                modifier = Modifier.testTag("in_app_banner_toggle_switch")
+              )
+            }
+
+            if (notificationsEnabled) {
+              Spacer(modifier = Modifier.height(14.dp))
+              Button(
+                onClick = {
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    permissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                  }
+                  onSendTestNotification()
+                  scope.launch {
+                    snackbarHostState.showSnackbar(strings.testNotificationSent)
+                  }
+                },
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .testTag("send_test_notification_btn")
+              ) {
+                Icon(
+                  imageVector = Icons.Filled.Send,
+                  contentDescription = null,
+                  modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                  text = strings.sendTestNotification,
+                  fontWeight = FontWeight.Bold,
+                  fontSize = 13.sp
+                )
+              }
+            }
+          }
+        }
+      }
+
+      // 5. Religious Accuracy & Content Safety Notice
       item {
         Card(
           shape = RoundedCornerShape(18.dp),

@@ -120,6 +120,15 @@ data class AppStrings(
   val cancel: String,
   val confirm: String,
 
+  // Notifications
+  val notificationsTitle: String,
+  val notificationsEnabled: String,
+  val notificationsDesc: String,
+  val sendTestNotification: String,
+  val testNotificationSent: String,
+  val inAppBannerOption: String,
+  val inAppBannerDesc: String,
+
   // Pause & Exit Dialog
   val pauseTitle: String,
   val resumeGame: String,
@@ -195,8 +204,8 @@ object LocalizationManager {
     timerSeconds = "s",
     correctAlert = "Correct! Masha'Allah",
     incorrectAlert = "Not quite. Learn from this:",
-    nextQuestion = "Continue",
-    finishQuiz = "Finish Quiz",
+    nextQuestion = "Next Question",
+    finishQuiz = "View Results",
     explanation = "Explanation",
     source = "Source / Reference",
     hintDialogTitle = "Helpful Clue",
@@ -254,6 +263,14 @@ object LocalizationManager {
     resetConfirmDesc = "This will reset all your coins, XP, streaks, and achievements. This cannot be undone.",
     cancel = "Cancel",
     confirm = "Reset",
+
+    notificationsTitle = "External Notifications",
+    notificationsEnabled = "Enable External Notifications",
+    notificationsDesc = "Send daily reminders and reward alerts to your phone's notification bar outside the app",
+    sendTestNotification = "Send Test Notification Now 🔔",
+    testNotificationSent = "Notification sent! Check your notification bar.",
+    inAppBannerOption = "In-App Notification Banner",
+    inAppBannerDesc = "Display the reward banner inside the home screen",
 
     pauseTitle = "Game Paused",
     resumeGame = "Resume",
@@ -327,8 +344,8 @@ object LocalizationManager {
     timerSeconds = "ث",
     correctAlert = "أحسنت! إجابة صحيحة ما شاء الله",
     incorrectAlert = "ليست الإجابة الصحيحة. تعلّم من هذا التوضيح:",
-    nextQuestion = "المتابعة",
-    finishQuiz = "إنهاء التحدي",
+    nextQuestion = "السؤال التالي",
+    finishQuiz = "عرض النتائج",
     explanation = "التوضيح والمعلومة",
     source = "المصدر / المرجع",
     hintDialogTitle = "تلميح مساعد",
@@ -386,6 +403,14 @@ object LocalizationManager {
     resetConfirmDesc = "سيؤدي هذا إلى تصفير نقاطك، أوسمتك، ومستواك. لا يمكن التراجع عن هذا الإجراء.",
     cancel = "إلغاء",
     confirm = "تأكيد التصفير",
+
+    notificationsTitle = "الإشعارات الخارجية (خارج التطبيق)",
+    notificationsEnabled = "تفعيل الإشعارات خارج التطبيق",
+    notificationsDesc = "إرسال التنبيهات والتذكيرات اليومية إلى شريط إشعارات الهاتف خارج التطبيق",
+    sendTestNotification = "إرسال إشعار تجريبي الآن 🔔",
+    testNotificationSent = "تم إرسال الإشعار! تفقّد شريط إشعارات هاتفك.",
+    inAppBannerOption = "شريط التنبيه داخل التطبيق",
+    inAppBannerDesc = "عرض شريط المكافأة داخل الشاشة الرئيسية (مُعطّل افتراضياً)",
 
     pauseTitle = "متوقف مؤقتًا",
     resumeGame = "استمرار التحدي",

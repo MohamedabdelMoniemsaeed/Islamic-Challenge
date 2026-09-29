@@ -58,6 +58,8 @@ fun AppNavigation(
   val vibrationEnabled by mainViewModel.vibrationEnabled.collectAsState()
   val soundVolume by mainViewModel.soundVolume.collectAsState()
   val isDarkMode by mainViewModel.isDarkMode.collectAsState()
+  val notificationsEnabled by mainViewModel.notificationsEnabled.collectAsState()
+  val showInAppBanner by mainViewModel.showInAppBanner.collectAsState()
 
   val quizViewModel = remember {
     QuizViewModel(
@@ -110,10 +112,18 @@ fun AppNavigation(
 
       // 3. Home Screen
       composable(Routes.HOME) {
+        val canClaim = mainViewModel.playerRepository.canClaimDailyReward(profile)
+        androidx.compose.runtime.LaunchedEffect(canClaim, notificationsEnabled) {
+          if (canClaim && notificationsEnabled) {
+            mainViewModel.notificationManager.sendDailyRewardNotification(language == AppLanguage.ARABIC)
+          }
+        }
+
         HomeScreen(
           profile = profile,
           language = language,
-          canClaimReward = mainViewModel.playerRepository.canClaimDailyReward(profile),
+          canClaimReward = canClaim,
+          showInAppBanner = showInAppBanner,
           isDailyChallengeCompleted = mainViewModel.playerRepository.isDailyChallengeCompletedToday(profile),
           unlockedAchievements = unlockedAchievements,
           onStartMode = { mode, category ->
@@ -124,7 +134,8 @@ fun AppNavigation(
           onNavigateToAchievements = { navController.navigate(Routes.PROFILE_STATS) },
           onNavigateToDailyReward = { navController.navigate(Routes.DAILY_REWARD) },
           onNavigateToProfileStats = { navController.navigate(Routes.PROFILE_STATS) },
-          onNavigateToSettings = { navController.navigate(Routes.SETTINGS) }
+          onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
+          onDismissInAppBanner = { mainViewModel.toggleInAppBanner(false) }
         )
       }
 
@@ -154,7 +165,12 @@ fun AppNavigation(
               popUpTo(Routes.QUIZ) { inclusive = true }
             }
           },
-          onExit = { navController.popBackStack() }
+          onExit = {
+            navController.navigate(Routes.HOME) {
+              popUpTo(Routes.HOME) { inclusive = false }
+              launchSingleTop = true
+            }
+          }
         )
       }
 
@@ -217,12 +233,17 @@ fun AppNavigation(
           vibrationEnabled = vibrationEnabled,
           soundVolume = soundVolume,
           isDarkMode = isDarkMode,
+          notificationsEnabled = notificationsEnabled,
+          showInAppBanner = showInAppBanner,
           onLanguageChange = { mainViewModel.setLanguage(it) },
           onSoundToggle = { mainViewModel.toggleSound(it) },
           onMusicToggle = { mainViewModel.toggleMusic(it) },
           onVibrationToggle = { mainViewModel.toggleVibration(it) },
           onSoundVolumeChange = { mainViewModel.setSoundVolume(it) },
           onDarkModeToggle = { mainViewModel.setDarkMode(it) },
+          onNotificationsToggle = { mainViewModel.toggleNotifications(it) },
+          onInAppBannerToggle = { mainViewModel.toggleInAppBanner(it) },
+          onSendTestNotification = { mainViewModel.sendTestNotification() },
           onResetProgress = { mainViewModel.resetAllProgress() },
           onBack = { navController.popBackStack() }
         )

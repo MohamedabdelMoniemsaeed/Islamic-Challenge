@@ -105,13 +105,13 @@ class QuizViewModel(
   private val _resultState = MutableStateFlow<QuizResultState?>(null)
   val resultState: StateFlow<QuizResultState?> = _resultState.asStateFlow()
 
-  private var currentMode: GameMode = GameMode.QUICK_CHALLENGE
+  var currentMode: GameMode = GameMode.QUICK_CHALLENGE
+    private set
   private var currentCategory: QuizCategory? = null
   private var timerJob: Job? = null
   private var autoAdvanceJob: Job? = null
 
-  private val answerLock = Any()
-  private val advanceLock = Any()
+  private val stateLock = Any()
   private val answeredQuestionIds = Collections.synchronizedSet(mutableSetOf<String>())
 
   val currentQuestion: Question?
@@ -181,7 +181,7 @@ class QuizViewModel(
   }
 
   private fun handleTimeExpired() {
-    synchronized(answerLock) {
+    synchronized(stateLock) {
       val q = currentQuestion ?: return
       if (_isAnswerLocked.value || _isAnswerSubmitted.value || _isTimeExpired.value || answeredQuestionIds.contains(q.id)) {
         return
@@ -195,13 +195,13 @@ class QuizViewModel(
       _wrongAnswersCount.value = _wrongAnswersCount.value + 1
       _lastEarnedXp.value = 0
       _lastEarnedCoins.value = 0
-      audioManager.playIncorrectFeedback(soundEnabled = true, vibrationEnabled = true)
 
       if (currentMode == GameMode.SURVIVAL_MODE) {
-        finishQuiz()
-      } else {
-        scheduleAutoAdvance()
+        // Wait for user to manually tap View Results / Next Question
       }
+    }
+    viewModelScope.launch(kotlinx.coroutines.Dispatchers.Default) {
+      audioManager.playIncorrectFeedback(soundEnabled = true, vibrationEnabled = true)
     }
   }
 
@@ -211,14 +211,17 @@ class QuizViewModel(
    * 1. Only one answer can ever be submitted per question in a round.
    * 2. Double-clicks or rapid multi-touches are strictly ignored.
    * 3. Timer is cancelled synchronously to prevent expiry race conditions.
-   * 4. Auto-advance timer is scheduled comfortably.
+   * 4. Auto-advance is completely disabled; user must manually tap Next.
+   * 5. Audio & haptic feedback is dispatched off-main-thread so touch is never blocked.
    */
   fun submitAnswer(
     answerIndex: Int,
     soundEnabled: Boolean = true,
     vibrationEnabled: Boolean = true
   ): Boolean {
-    synchronized(answerLock) {
+    val isCorrect: Boolean
+
+    synchronized(stateLock) {
       val q = currentQuestion ?: return false
 
       if (_isAnswerLocked.value || _isAnswerSubmitted.value || _isTimeExpired.value || _isPaused.value) {
@@ -239,7 +242,7 @@ class QuizViewModel(
       timerJob?.cancel()
 
       // 2. Record answer and rewards
-      val isCorrect = answerIndex == q.correctAnswerIndex
+      isCorrect = answerIndex == q.correctAnswerIndex
       val status = if (isCorrect) QuestionStatus.ANSWERED_CORRECT else QuestionStatus.ANSWERED_WRONG
       _currentQuestionStatus.value = status
       _questionStatuses.value = _questionStatuses.value + (q.id to status)
@@ -253,18 +256,23 @@ class QuizViewModel(
         _score.value = _score.value + (q.difficulty.xpMultiplier * 10)
         _xpEarned.value = _xpEarned.value + earnedXp
         _coinsEarned.value = _coinsEarned.value + earnedCoins
-        audioManager.playCorrectFeedback(soundEnabled, vibrationEnabled)
       } else {
         _lastEarnedXp.value = 0
         _lastEarnedCoins.value = 0
         _wrongAnswersCount.value = _wrongAnswersCount.value + 1
+      }
+    }
+
+    // 3. Audio & Vibration feedback dispatched asynchronously off UI thread
+    viewModelScope.launch(kotlinx.coroutines.Dispatchers.Default) {
+      if (isCorrect) {
+        audioManager.playCorrectFeedback(soundEnabled, vibrationEnabled)
+      } else {
         audioManager.playIncorrectFeedback(soundEnabled, vibrationEnabled)
       }
-
-      // 3. Schedule automatic transition to next question (or results)
-      scheduleAutoAdvance()
-      return true
     }
+
+    return true
   }
 
   fun selectOption(optionIndex: Int, soundEnabled: Boolean, vibrationEnabled: Boolean) {
@@ -272,43 +280,46 @@ class QuizViewModel(
   }
 
   fun scheduleAutoAdvance(delayMs: Long = 1600L) {
+    // Deprecated: Auto-advance is completely disabled in favor of manual Next button.
     autoAdvanceJob?.cancel()
-    _isAutoAdvancing.value = true
-    autoAdvanceJob = viewModelScope.launch {
-      delay(delayMs)
-      _isAutoAdvancing.value = false
-      nextQuestion()
-    }
+    autoAdvanceJob = null
+    _isAutoAdvancing.value = false
   }
 
-  fun nextQuestion() {
-    synchronized(advanceLock) {
+  fun nextQuestion(): Boolean {
+    synchronized(stateLock) {
       autoAdvanceJob?.cancel()
       autoAdvanceJob = null
       _isAutoAdvancing.value = false
+
+      if (_quizFinished.value) {
+        return false
+      }
 
       val currIdx = _currentIndex.value
       val total = _questions.value.size
 
       if (currIdx >= total) {
         finishQuiz()
-        return
+        return true
       }
 
       // Must be answered, expired, or skipped to advance; cannot advance an UNANSWERED question
       if (!_isAnswerSubmitted.value && !_isTimeExpired.value && _currentQuestionStatus.value == QuestionStatus.UNANSWERED) {
-        return
+        return false
       }
 
-      val wasWrong = _currentQuestionStatus.value == QuestionStatus.ANSWERED_WRONG || _isTimeExpired.value
+      val wasWrong = _currentQuestionStatus.value == QuestionStatus.ANSWERED_WRONG ||
+                     _currentQuestionStatus.value == QuestionStatus.EXPIRED ||
+                     _isTimeExpired.value
       if (currentMode == GameMode.SURVIVAL_MODE && wasWrong) {
         finishQuiz()
-        return
+        return true
       }
 
       val nextIdx = currIdx + 1
       if (nextIdx < total) {
-        _currentIndex.value = nextIdx
+        // Reset all question-specific locks & state FIRST before incrementing index
         _selectedOptionIndex.value = null
         _isAnswerSubmitted.value = false
         _isAnswerLocked.value = false
@@ -317,9 +328,12 @@ class QuizViewModel(
         _eliminatedOptions.value = emptySet()
         _lastEarnedXp.value = 0
         _lastEarnedCoins.value = 0
+        _currentIndex.value = nextIdx
         startTimerForCurrentQuestion()
+        return true
       } else {
         finishQuiz()
+        return true
       }
     }
   }
@@ -350,7 +364,7 @@ class QuizViewModel(
           _remainingSeconds.value = _remainingSeconds.value + 15
         }
         LifelineType.SKIP -> {
-          synchronized(answerLock) {
+          synchronized(stateLock) {
             if (_isAnswerSubmitted.value || _isAnswerLocked.value || answeredQuestionIds.contains(q.id)) {
               return@launch
             }
@@ -361,7 +375,7 @@ class QuizViewModel(
             _questionStatuses.value = _questionStatuses.value + (q.id to QuestionStatus.SKIPPED)
             timerJob?.cancel()
           }
-          nextQuestion()
+          // Question marked as SKIPPED; user reads explanation and presses Next manually
         }
       }
     }
@@ -381,14 +395,21 @@ class QuizViewModel(
     _isPaused.value = false
     if (!_isAnswerSubmitted.value && !_isAnswerLocked.value && !_quizFinished.value) {
       resumeTimer()
-    } else if ((_isAnswerSubmitted.value || _isTimeExpired.value) && !_quizFinished.value) {
-      scheduleAutoAdvance()
     }
   }
 
   fun restartRound() {
     _isPaused.value = false
     startQuiz(currentMode, currentCategory)
+  }
+
+  fun exitQuiz() {
+    _isPaused.value = false
+    timerJob?.cancel()
+    autoAdvanceJob?.cancel()
+    _quizFinished.value = false
+    _resultState.value = null
+    _activeHint.value = null
   }
 
   fun pauseTimer() {

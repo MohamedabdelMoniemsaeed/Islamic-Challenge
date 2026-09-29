@@ -8,6 +8,7 @@ import com.example.data.local.AppDatabase
 import com.example.data.local.CategoryProgressEntity
 import com.example.data.local.MIGRATION_1_2
 import com.example.data.local.MIGRATION_2_3
+import com.example.data.local.MIGRATION_3_4
 import com.example.data.local.PlayerDao
 import com.example.data.local.PlayerEntity
 import com.example.data.local.UserSettingsEntity
@@ -129,9 +130,9 @@ class RoomMigrationAndStabilityTest {
     )
     v1Db.close()
 
-    // Step 3: Open database with AppDatabase (Version 3) and MIGRATION_1_2, MIGRATION_2_3
+    // Step 3: Open database with AppDatabase (Version 4) and MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4
     val v3Db = Room.databaseBuilder(context, AppDatabase::class.java, dbName)
-      .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+      .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
       .allowMainThreadQueries()
       .build()
 
@@ -252,9 +253,9 @@ class RoomMigrationAndStabilityTest {
     ).writableDatabase
     v2Db.close()
 
-    // Step 2: Open with AppDatabase v3 and MIGRATION_2_3
+    // Step 2: Open with AppDatabase v4 and MIGRATION_2_3, MIGRATION_3_4
     val v3Db = Room.databaseBuilder(context, AppDatabase::class.java, dbName)
-      .addMigrations(MIGRATION_2_3)
+      .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
       .allowMainThreadQueries()
       .build()
 
@@ -268,9 +269,115 @@ class RoomMigrationAndStabilityTest {
       val saved = v3Db.playerDao().getUserSettingsSync()
       assertNotNull(saved)
       assertTrue(saved!!.soundEnabled)
+      assertTrue(saved.notificationsEnabled)
+      assertFalse(saved.showInAppBanner)
     }
 
     v3Db.close()
+    context.deleteDatabase(dbName)
+  }
+
+  @Test
+  fun testMigration3To4AddsNotificationColumns() {
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    val dbName = "migration_3_4_test.db"
+    context.deleteDatabase(dbName)
+
+    // Step 1: Create Version 3 database (without notificationsEnabled and showInAppBanner)
+    val v3Db = FrameworkSQLiteOpenHelperFactory().create(
+      androidx.sqlite.db.SupportSQLiteOpenHelper.Configuration.builder(context)
+        .name(dbName)
+        .callback(object : androidx.sqlite.db.SupportSQLiteOpenHelper.Callback(3) {
+          override fun onCreate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+            db.execSQL(
+              """
+              CREATE TABLE IF NOT EXISTS `player_profile` (
+                `id` INTEGER NOT NULL,
+                `xp` INTEGER NOT NULL,
+                `coins` INTEGER NOT NULL,
+                `totalQuestions` INTEGER NOT NULL,
+                `correctAnswers` INTEGER NOT NULL,
+                `incorrectAnswers` INTEGER NOT NULL,
+                `gamesPlayed` INTEGER NOT NULL,
+                `currentStreak` INTEGER NOT NULL,
+                `longestStreak` INTEGER NOT NULL,
+                `lastActiveEpochDay` INTEGER NOT NULL,
+                `dailyRewardStreakDay` INTEGER NOT NULL,
+                `lastRewardClaimEpochDay` INTEGER NOT NULL,
+                `lifelines5050` INTEGER NOT NULL,
+                `lifelinesHint` INTEGER NOT NULL,
+                `lifelinesTime` INTEGER NOT NULL,
+                `lifelinesSkip` INTEGER NOT NULL,
+                `hasCompletedOnboarding` INTEGER NOT NULL,
+                `lastDailyChallengeEpochDay` INTEGER NOT NULL,
+                PRIMARY KEY(`id`)
+              )
+              """.trimIndent()
+            )
+            db.execSQL(
+              """
+              CREATE TABLE IF NOT EXISTS `category_progress` (
+                `categoryId` TEXT NOT NULL,
+                `questionsAnswered` INTEGER NOT NULL,
+                `correctCount` INTEGER NOT NULL,
+                `bestScore` INTEGER NOT NULL,
+                `isCompleted` INTEGER NOT NULL,
+                PRIMARY KEY(`categoryId`)
+              )
+              """.trimIndent()
+            )
+            db.execSQL(
+              """
+              CREATE TABLE IF NOT EXISTS `unlocked_achievements` (
+                `achievementId` TEXT NOT NULL,
+                `unlockedTimestamp` INTEGER NOT NULL,
+                PRIMARY KEY(`achievementId`)
+              )
+              """.trimIndent()
+            )
+            db.execSQL(
+              """
+              CREATE TABLE IF NOT EXISTS `user_settings` (
+                `id` INTEGER NOT NULL,
+                `soundEnabled` INTEGER NOT NULL DEFAULT 1,
+                `musicEnabled` INTEGER NOT NULL DEFAULT 0,
+                `vibrationEnabled` INTEGER NOT NULL DEFAULT 1,
+                `soundVolume` REAL NOT NULL DEFAULT 0.8,
+                `themeMode` TEXT NOT NULL DEFAULT 'SYSTEM',
+                `languageCode` TEXT NOT NULL DEFAULT 'ARABIC',
+                PRIMARY KEY(`id`)
+              )
+              """.trimIndent()
+            )
+          }
+
+          override fun onUpgrade(db: androidx.sqlite.db.SupportSQLiteDatabase, oldVersion: Int, newVersion: Int) {}
+        })
+        .build()
+    ).writableDatabase
+
+    // Insert v3 row
+    v3Db.execSQL(
+      """
+      INSERT INTO `user_settings` (`id`, `soundEnabled`, `musicEnabled`, `vibrationEnabled`, `soundVolume`, `themeMode`, `languageCode`)
+      VALUES (1, 1, 0, 1, 0.8, 'SYSTEM', 'ARABIC')
+      """.trimIndent()
+    )
+    v3Db.close()
+
+    // Step 2: Open with AppDatabase v4 and MIGRATION_3_4
+    val v4Db = Room.databaseBuilder(context, AppDatabase::class.java, dbName)
+      .addMigrations(MIGRATION_3_4)
+      .allowMainThreadQueries()
+      .build()
+
+    val settings = runBlocking { v4Db.playerDao().getUserSettingsSync() }
+    assertNotNull(settings)
+    assertTrue("Notifications must default to enabled in migration", settings!!.notificationsEnabled)
+    assertFalse("In-app banner must default to false in migration", settings.showInAppBanner)
+    assertTrue(settings.soundEnabled)
+
+    v4Db.close()
     context.deleteDatabase(dbName)
   }
 

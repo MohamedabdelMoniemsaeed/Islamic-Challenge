@@ -185,14 +185,20 @@ class ProductionReadinessAndQualityAuditTest {
     val q = vm.currentQuestion!!
     val wrongIdx = (0..3).first { it != q.correctAnswerIndex }
 
-    // Submit wrong answer - explanation is displayed, then auto-advances to results
+    // Submit wrong answer - explanation is displayed, question is locked, no auto-advance
     vm.submitAnswer(wrongIdx, soundEnabled = false, vibrationEnabled = false)
-    assertTrue("Auto advance scheduled to show explanation", vm.isAutoAdvancing.value)
+    assertFalse("Auto advance must not be scheduled", vm.isAutoAdvancing.value)
+    assertFalse("Quiz must not finish until user clicks Next/View Results", vm.quizFinished.value)
 
-    advanceTimeBy(1650L)
+    advanceTimeBy(5000L)
+    testScheduler.runCurrent()
+    assertFalse("Still at question after time passes", vm.quizFinished.value)
+
+    // User taps Next / View Results
+    vm.nextQuestion()
     testScheduler.runCurrent()
 
-    assertTrue("Survival mode must end immediately on wrong answer", vm.quizFinished.value)
+    assertTrue("Survival mode must end on manual next after wrong answer", vm.quizFinished.value)
     val result = vm.resultState.value
     assertNotNull(result)
     assertEquals(0, result!!.correctCount)

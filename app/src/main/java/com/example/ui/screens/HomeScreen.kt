@@ -9,15 +9,21 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -55,6 +61,7 @@ fun HomeScreen(
   profile: PlayerProfile,
   language: AppLanguage,
   canClaimReward: Boolean,
+  showInAppBanner: Boolean = false,
   isDailyChallengeCompleted: Boolean,
   unlockedAchievements: Set<String>,
   onStartMode: (GameMode, QuizCategory?) -> Unit,
@@ -62,7 +69,8 @@ fun HomeScreen(
   onNavigateToAchievements: () -> Unit,
   onNavigateToDailyReward: () -> Unit,
   onNavigateToProfileStats: () -> Unit,
-  onNavigateToSettings: () -> Unit
+  onNavigateToSettings: () -> Unit,
+  onDismissInAppBanner: () -> Unit = {}
 ) {
   val strings = LocalizationManager.get(language)
   val isAr = language.isRtl
@@ -77,7 +85,8 @@ fun HomeScreen(
         onSettingsClick = onNavigateToSettings
       )
     },
-    containerColor = MaterialTheme.colorScheme.background
+    containerColor = MaterialTheme.colorScheme.background,
+    contentWindowInsets = WindowInsets.navigationBars
   ) { paddingValues ->
     LazyColumn(
       modifier = Modifier
@@ -97,12 +106,13 @@ fun HomeScreen(
         )
       }
 
-      // 2. Daily Reward Ready Banner (if eligible for claim)
-      if (canClaimReward) {
+      // 2. Daily Reward Ready Banner (Only shown if user chose to show it inside app, otherwise delivered outside app)
+      if (canClaimReward && showInAppBanner) {
         item {
           DailyRewardReadyBanner(
             strings = strings,
-            onClick = onNavigateToDailyReward
+            onClick = onNavigateToDailyReward,
+            onDismiss = onDismissInAppBanner
           )
         }
       }
@@ -230,7 +240,8 @@ private fun HomeHeroBanner(
 @Composable
 private fun DailyRewardReadyBanner(
   strings: com.example.core.localization.AppStrings,
-  onClick: () -> Unit
+  onClick: () -> Unit,
+  onDismiss: () -> Unit
 ) {
   Surface(
     shape = RoundedCornerShape(16.dp),
@@ -247,7 +258,10 @@ private fun DailyRewardReadyBanner(
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.SpaceBetween
     ) {
-      Row(verticalAlignment = Alignment.CenterVertically) {
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.weight(1f)
+      ) {
         Text(text = "🎁", fontSize = 24.sp)
         Spacer(modifier = Modifier.width(12.dp))
         Column {
@@ -264,17 +278,36 @@ private fun DailyRewardReadyBanner(
           )
         }
       }
-      Surface(
-        shape = RoundedCornerShape(10.dp),
-        color = Color(0xFFD97706)
-      ) {
-        Text(
-          text = strings.claimReward,
-          color = Color.White,
-          fontWeight = FontWeight.Bold,
-          fontSize = 12.sp,
-          modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-        )
+
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        Surface(
+          shape = RoundedCornerShape(10.dp),
+          color = Color(0xFFD97706)
+        ) {
+          Text(
+            text = strings.claimReward,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
+            fontSize = 12.sp,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+          )
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        IconButton(
+          onClick = onDismiss,
+          modifier = Modifier
+            .size(32.dp)
+            .testTag("dismiss_in_app_banner_btn")
+        ) {
+          Icon(
+            imageVector = Icons.Filled.Close,
+            contentDescription = "Dismiss",
+            tint = Color(0xFF78350F),
+            modifier = Modifier.size(18.dp)
+          )
+        }
       }
     }
   }

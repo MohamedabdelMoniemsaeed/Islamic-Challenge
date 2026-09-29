@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import android.app.Activity
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -13,12 +14,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -27,11 +31,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
 import com.example.R
 import com.example.core.localization.AppLanguage
 import com.example.core.localization.LocalizationManager
@@ -50,6 +56,22 @@ fun SplashScreen(
   val strings = LocalizationManager.get(language)
   val scaleAnim = remember { Animatable(0.8f) }
   val pulseAnim = remember { Animatable(1f) }
+
+  val view = LocalView.current
+  if (!view.isInEditMode) {
+    DisposableEffect(Unit) {
+      val window = (view.context as? Activity)?.window
+      val insetsController = window?.let { WindowCompat.getInsetsController(it, view) }
+      val originalLightStatus = insetsController?.isAppearanceLightStatusBars
+      val originalLightNav = insetsController?.isAppearanceLightNavigationBars
+      insetsController?.isAppearanceLightStatusBars = false
+      insetsController?.isAppearanceLightNavigationBars = false
+      onDispose {
+        originalLightStatus?.let { insetsController.isAppearanceLightStatusBars = it }
+        originalLightNav?.let { insetsController.isAppearanceLightNavigationBars = it }
+      }
+    }
+  }
 
   LaunchedEffect(Unit) {
     scaleAnim.animateTo(
@@ -90,6 +112,8 @@ fun SplashScreen(
       verticalArrangement = Arrangement.Center,
       modifier = Modifier
         .scale(scaleAnim.value)
+        .statusBarsPadding()
+        .navigationBarsPadding()
         .padding(32.dp)
     ) {
       Text(
