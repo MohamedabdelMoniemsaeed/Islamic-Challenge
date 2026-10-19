@@ -20,10 +20,12 @@ class AppNotificationManager(private val context: Context) {
 
   companion object {
     const val CHANNEL_ID = "islamic_challenge_daily_reminders"
+    const val CHANNEL_ID_ADHAN = "islamic_challenge_adhan_alerts"
     const val NOTIFICATION_ID_DAILY = 2001
     const val NOTIFICATION_ID_TEST = 2002
     const val NOTIFICATION_ID_REWARD = 2003
     const val NOTIFICATION_ID_CHALLENGE = 2004
+    const val NOTIFICATION_ID_ADHAN_BASE = 5000
     const val ALARM_REQUEST_CODE = 3001
   }
 
@@ -43,6 +45,16 @@ class AppNotificationManager(private val context: Context) {
         enableVibration(true)
       }
       notificationManager.createNotificationChannel(channel)
+
+      val adhanChannel = NotificationChannel(
+        CHANNEL_ID_ADHAN,
+        "مواقيت الصلاة وتنبيهات الأذان",
+        NotificationManager.IMPORTANCE_HIGH
+      ).apply {
+        description = "تنبيهات دخول أوقات الصلوات الخمس وسماع الأذان"
+        enableVibration(true)
+      }
+      notificationManager.createNotificationChannel(adhanChannel)
     }
   }
 
@@ -101,6 +113,36 @@ class AppNotificationManager(private val context: Context) {
       "Notifications activated! Daily reminders will now appear outside the app in your notification bar."
     }
     sendNotification(title, message, NOTIFICATION_ID_TEST)
+  }
+
+  fun sendPrayerNotification(prayerName: String, prayerTime: String) {
+    if (!hasNotificationPermission()) return
+
+    val intent = Intent(context, MainActivity::class.java).apply {
+      flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+    }
+    val pendingIntent = PendingIntent.getActivity(
+      context,
+      NOTIFICATION_ID_ADHAN_BASE,
+      intent,
+      PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
+
+    val title = "🕌 حان الآن موعد أذان صلاة $prayerName"
+    val message = "الله أكبر، الله أكبر.. حان الآن موعد أذان $prayerName ($prayerTime). حيّ على الصلاة، حيّ على الفلاح."
+
+    val builder = NotificationCompat.Builder(context, CHANNEL_ID_ADHAN)
+      .setSmallIcon(R.mipmap.ic_launcher)
+      .setContentTitle(title)
+      .setContentText(message)
+      .setStyle(NotificationCompat.BigTextStyle().bigText(message))
+      .setPriority(NotificationCompat.PRIORITY_HIGH)
+      .setAutoCancel(true)
+      .setContentIntent(pendingIntent)
+
+    try {
+      NotificationManagerCompat.from(context).notify(NOTIFICATION_ID_ADHAN_BASE, builder.build())
+    } catch (_: SecurityException) {}
   }
 
   fun sendDailyRewardNotification(isArabic: Boolean) {

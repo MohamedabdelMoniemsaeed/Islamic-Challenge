@@ -18,8 +18,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
@@ -70,6 +72,7 @@ fun HomeScreen(
   onNavigateToDailyReward: () -> Unit,
   onNavigateToProfileStats: () -> Unit,
   onNavigateToSettings: () -> Unit,
+  onNavigateToPrayerTimes: () -> Unit = {},
   onDismissInAppBanner: () -> Unit = {}
 ) {
   val strings = LocalizationManager.get(language)
@@ -103,6 +106,13 @@ fun HomeScreen(
           isArabic = isAr,
           strings = strings,
           onClick = onNavigateToProfileStats
+        )
+      }
+
+      // Prayer Times & Adhan Quick Card
+      item {
+        PrayerTimesHomeBanner(
+          onClick = onNavigateToPrayerTimes
         )
       }
 
@@ -312,3 +322,78 @@ private fun DailyRewardReadyBanner(
     }
   }
 }
+
+@Composable
+fun PrayerTimesHomeBanner(
+  onClick: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  Card(
+    shape = RoundedCornerShape(18.dp),
+    colors = androidx.compose.material3.CardDefaults.cardColors(
+      containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.85f)
+    ),
+    modifier = modifier
+      .fillMaxWidth()
+      .clickable(onClick = onClick)
+      .testTag("prayer_times_home_banner")
+  ) {
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp, vertical = 14.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.weight(1f)
+      ) {
+        Surface(
+          shape = CircleShape,
+          color = MaterialTheme.colorScheme.primary,
+          modifier = Modifier.size(44.dp)
+        ) {
+          Box(contentAlignment = Alignment.Center) {
+            Icon(
+              imageVector = Icons.Filled.AccessTime,
+              contentDescription = null,
+              tint = MaterialTheme.colorScheme.onPrimary,
+              modifier = Modifier.size(22.dp)
+            )
+          }
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Column {
+          Text(
+            text = "مواقيت الصلاة والأذان 🕌",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSecondaryContainer
+          )
+          Text(
+            text = "مواقيت الصلوات الخمس والاستماع لصوت الأذان",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.85f)
+          )
+        }
+      }
+
+      Spacer(modifier = Modifier.width(8.dp))
+
+      Surface(
+        shape = RoundedCornerShape(10.dp),
+        color = MaterialTheme.colorScheme.primary
+      ) {
+        Text(
+          text = "عرض",
+          style = MaterialTheme.typography.labelMedium,
+          fontWeight = FontWeight.Bold,
+          color = MaterialTheme.colorScheme.onPrimary,
+          modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+        )
+      }
+    }
+  }
+}
+

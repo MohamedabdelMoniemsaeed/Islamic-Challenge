@@ -35,12 +35,15 @@ import com.example.ui.screens.CategoryScreen
 import com.example.ui.screens.DailyRewardScreen
 import com.example.ui.screens.HomeScreen
 import com.example.ui.screens.OnboardingScreen
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ui.screens.PrayerTimesScreen
 import com.example.ui.screens.ProfileAndStatsScreen
 import com.example.ui.screens.QuizScreen
 import com.example.ui.screens.ResultsScreen
 import com.example.ui.screens.SettingsScreen
 import com.example.ui.screens.SplashScreen
 import com.example.ui.viewmodels.MainViewModel
+import com.example.ui.viewmodels.PrayerTimesViewModel
 import com.example.ui.viewmodels.QuizViewModel
 
 object Routes {
@@ -53,6 +56,7 @@ object Routes {
   const val DAILY_REWARD = "daily_reward"
   const val PROFILE_STATS = "profile_stats"
   const val SETTINGS = "settings"
+  const val PRAYER_TIMES = "prayer_times"
 }
 
 @Composable
@@ -82,6 +86,7 @@ fun AppNavigation(
 
   val context = LocalContext.current
   val interstitialManager = remember { AdMobInterstitialManager(context.applicationContext) }
+  val prayerTimesViewModel: PrayerTimesViewModel = viewModel()
 
   val layoutDirection = if (language == AppLanguage.ARABIC) LayoutDirection.Rtl else LayoutDirection.Ltr
   val currentBackStackEntry by navController.currentBackStackEntryAsState()
@@ -163,6 +168,7 @@ fun AppNavigation(
           onNavigateToDailyReward = { navController.navigate(Routes.DAILY_REWARD) },
           onNavigateToProfileStats = { navController.navigate(Routes.PROFILE_STATS) },
           onNavigateToSettings = { navController.navigate(Routes.SETTINGS) },
+          onNavigateToPrayerTimes = { navController.navigate(Routes.PRAYER_TIMES) },
           onDismissInAppBanner = { mainViewModel.toggleInAppBanner(false) }
         )
       }
@@ -279,6 +285,14 @@ fun AppNavigation(
           onInAppBannerToggle = { mainViewModel.toggleInAppBanner(it) },
           onSendTestNotification = { mainViewModel.sendTestNotification() },
           onResetProgress = { mainViewModel.resetAllProgress() },
+          onBack = { navController.popBackStack() }
+        )
+      }
+
+      // 10. Prayer Times and Adhan Screen
+      composable(Routes.PRAYER_TIMES) {
+        PrayerTimesScreen(
+          viewModel = prayerTimesViewModel,
           onBack = { navController.popBackStack() }
         )
       }
