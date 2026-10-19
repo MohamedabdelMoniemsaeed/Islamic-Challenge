@@ -19,6 +19,7 @@ import com.example.ui.viewmodels.MainViewModel
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    com.google.android.gms.ads.MobileAds.initialize(this) {}
     enableEdgeToEdge()
     setContent {
       val mainViewModel: MainViewModel = viewModel()

@@ -4,7 +4,11 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
@@ -13,10 +17,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.core.ads.AdMobInterstitialManager
+import com.example.ui.components.AdMobBannerBar
 import com.example.core.localization.AppLanguage
 import com.example.data.models.GameMode
 import com.example.data.models.QuizCategory
@@ -69,16 +80,33 @@ fun AppNavigation(
     )
   }
 
+  val context = LocalContext.current
+  val interstitialManager = remember { AdMobInterstitialManager(context.applicationContext) }
+
   val layoutDirection = if (language == AppLanguage.ARABIC) LayoutDirection.Rtl else LayoutDirection.Ltr
+  val currentBackStackEntry by navController.currentBackStackEntryAsState()
+  val currentRoute = currentBackStackEntry?.destination?.route
+  val showBottomAdBar = currentRoute != null && currentRoute != Routes.SPLASH && currentRoute != Routes.ONBOARDING
 
   CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
-    NavHost(
-      navController = navController,
-      startDestination = Routes.SPLASH,
-      modifier = Modifier.fillMaxSize(),
-      enterTransition = { fadeIn(animationSpec = tween(280)) },
-      exitTransition = { fadeOut(animationSpec = tween(280)) }
-    ) {
+    Scaffold(
+      bottomBar = {
+        if (showBottomAdBar) {
+          AdMobBannerBar()
+        }
+      },
+      contentWindowInsets = WindowInsets(0, 0, 0, 0)
+    ) { innerPadding ->
+      NavHost(
+        navController = navController,
+        startDestination = Routes.SPLASH,
+        modifier = Modifier
+          .fillMaxSize()
+          .padding(innerPadding)
+          .consumeWindowInsets(innerPadding),
+        enterTransition = { fadeIn(animationSpec = tween(280)) },
+        exitTransition = { fadeOut(animationSpec = tween(280)) }
+      ) {
       // 1. Splash Screen
       composable(Routes.SPLASH) {
         SplashScreen(
@@ -161,8 +189,11 @@ fun AppNavigation(
           soundEnabled = soundEnabled,
           vibrationEnabled = vibrationEnabled,
           onQuizFinished = {
-            navController.navigate(Routes.RESULTS) {
-              popUpTo(Routes.QUIZ) { inclusive = true }
+            val activity = context.findActivity()
+            interstitialManager.showInterstitialIfReady(activity) {
+              navController.navigate(Routes.RESULTS) {
+                popUpTo(Routes.QUIZ) { inclusive = true }
+              }
             }
           },
           onExit = {
@@ -189,8 +220,11 @@ fun AppNavigation(
               }
             },
             onReturnHome = {
-              navController.navigate(Routes.HOME) {
-                popUpTo(Routes.HOME) { inclusive = true }
+              val activity = context.findActivity()
+              interstitialManager.showInterstitialIfReady(activity) {
+                navController.navigate(Routes.HOME) {
+                  popUpTo(Routes.HOME) { inclusive = true }
+                }
               }
             },
             onChooseCategory = {
@@ -250,4 +284,14 @@ fun AppNavigation(
       }
     }
   }
+}
+}
+
+private fun Context.findActivity(): Activity? {
+  var current = this
+  while (current is ContextWrapper) {
+    if (current is Activity) return current
+    current = current.baseContext
+  }
+  return null
 }
