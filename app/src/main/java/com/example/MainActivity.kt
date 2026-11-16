@@ -15,11 +15,19 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ui.navigation.AppNavigation
 import com.example.ui.theme.IslamicChallengeTheme
 import com.example.ui.viewmodels.MainViewModel
+import com.google.android.gms.ads.MobileAds
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    com.google.android.gms.ads.MobileAds.initialize(this) {}
+    CoroutineScope(Dispatchers.IO).launch {
+      try {
+        MobileAds.initialize(applicationContext) {}
+      } catch (_: Throwable) {}
+    }
     enableEdgeToEdge()
     setContent {
       val mainViewModel: MainViewModel = viewModel()

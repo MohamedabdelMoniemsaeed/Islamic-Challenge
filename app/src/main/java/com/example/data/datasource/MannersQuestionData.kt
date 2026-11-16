@@ -10,9 +10,9 @@ object MannersQuestionData {
       id = "q_man_4",
       questionEn = "When a man asked the Prophet ﷺ 'Who is most deserving of my fine companionship?', what was the Prophet's reply?",
       questionAr = "عندما سأل رجل النبي ﷺ: (من أحق الناس بحسن صحابتي؟) فبماذا أجابه الحبيب المصطفى ﷺ أولاً؟",
-      optionsEn = listOf("Your father", "Your mother", "Your eldest brother", "Your closest teacher"),
-      optionsAr = listOf("أبوك", "أُمُّكَ (كررها ثلاثاً قبل أن يذكر الأب)", "أخوك الأكبر", "معلمك"),
-      correctAnswerIndex = 1,
+      optionsEn = listOf("Your father", "Your eldest brother", "Your closest teacher", "Your mother"),
+      optionsAr = listOf("أبوك", "أخوك الأكبر", "معلمك", "أمك"),
+      correctAnswerIndex = 3,
       explanationEn = "The Prophet ﷺ repeated: 'Your mother, then your mother, then your mother, then your father' highlighting the immense honor of maternal sacrifice.",
       explanationAr = "قال رسول الله ﷺ: {أمك، قال ثم من؟ قال: أمك، قال ثم من؟ قال: أمك، قال ثم من؟ قال: أبوك}، مقدماً الأم ثلاث مرات لعظم برها ومشقتها في الحمل والولادة والرضاع.",
       category = QuizCategory.MANNERS,
@@ -26,16 +26,16 @@ object MannersQuestionData {
       questionEn = "What did the Prophet ﷺ say regarding truthfulness (As-Sidq) in guiding to righteousness?",
       questionAr = "ماذا قال النبي ﷺ في فضل الصدق ومصير الصادقين في الحديث المتفق عليه؟",
       optionsEn = listOf(
-        "Truthfulness is only needed in business transactions",
-        "Truthfulness brings worldly fame only",
-        "Truthfulness leads to righteousness, and righteousness leads to Paradise",
-        "Truthfulness is optional with strangers"
+        "Needed only in business trade",
+        "Brings worldly reputation only",
+        "Leads to virtue and Paradise",
+        "Optional when talking to others"
       ),
       optionsAr = listOf(
-        "الصدق مطلوب فقط في البيع والشراء",
-        "الصدق يجلب الشهرة الدنيوية فقط",
-        "إِنَّ الصِّدْقَ يَهْدِي إِلَى الْبِرِّ، وَإِنَّ الْبِرَّ يَهْدِي إِلَى الْجَنَّةِ",
-        "الصدق أمر غير ملزم مع الغرباء"
+        "الصدق مطلوب في البيع فقط",
+        "الصدق يجلب الشهرة الدنيوية",
+        "الصدق يهدي إلى البر والجنة",
+        "الصدق مستحب في المجالس فقط"
       ),
       correctAnswerIndex = 2,
       explanationEn = "The Prophet ﷺ said: 'Truthfulness leads to righteousness, and righteousness leads to Paradise. A man keeps speaking the truth until he is recorded with Allah as a Siddiq (truthful).'",
@@ -50,9 +50,9 @@ object MannersQuestionData {
       id = "q_man_6",
       questionEn = "What brief and momentous counsel did the Prophet ﷺ repeat three times to the man who asked: 'Advise me'?",
       questionAr = "ما هي الوصية النبوية البليغة التي كررها النبي ﷺ ثلاث مرات لرجل طلب نصيحة موجزة جامعة؟",
-      optionsEn = listOf("Do not sleep early", "Do not get angry (La taghdab)", "Do not travel alone", "Do not eat dates"),
-      optionsAr = listOf("لا تنم مبكراً", "لَا تَغْضَبْ (كررها مراراً)", "لا تسافر وحدك", "لا تأكل كثيراً"),
-      correctAnswerIndex = 1,
+      optionsEn = listOf("Do not sleep early", "Do not travel alone", "Do not eat excess", "Do not get angry"),
+      optionsAr = listOf("لا تنم في النهار", "لا تسافر وحدك", "لا تكثر الطعام", "لا تغضب"),
+      correctAnswerIndex = 3,
       explanationEn = "A man asked the Prophet ﷺ: 'Advise me.' The Prophet replied: 'Do not get angry.' The man repeated his request several times, and the Prophet repeated: 'Do not get angry.'",
       explanationAr = "جاء رجل إلى النبي ﷺ فقال: أوصني، قال: {لا تغضب}. فردد مراراً، قال: {لا تغضب}، لحفظ سلامة العقل وصيانة العلاقات من الطيش والندم.",
       category = QuizCategory.MANNERS,
@@ -66,18 +66,18 @@ object MannersQuestionData {
       questionEn = "What did the Prophet ﷺ say about modesty (Al-Haya') in the religion of Islam?",
       questionAr = "ماذا قال النبي ﷺ عن خلق (الحياء) ومكانته في منظومة الإيمان؟",
       optionsEn = listOf(
-        "Modesty is a sign of weakness",
-        "Modesty should be abandoned in public",
-        "Modesty has no reward",
-        "Modesty brings nothing except good, and it is a branch of Faith"
+        "Modesty weakens personality",
+        "Modesty brings only good",
+        "Modesty carries no reward",
+        "Modesty fits private life only"
       ),
       optionsAr = listOf(
-        "الحياء ضعف في الشخصية",
-        "الحياء من الأخلاق غير المرغوبة",
-        "الحياء لا ثواب عليه في الآخرة",
-        "الْحَيَاءُ لَا يَأْتِي إِلَّا بِخَيْرٍ، وَهُوَ شُعْبَةٌ مِنَ الْإِيمَانِ"
+        "الحياء يضعف شخصية المؤمن",
+        "الحياء لا يأتي إلا بخير",
+        "الحياء لا ثواب عليه للناس",
+        "الحياء خاص بالخلوات فقط"
       ),
-      correctAnswerIndex = 3,
+      correctAnswerIndex = 1,
       explanationEn = "The Prophet ﷺ stated: 'Modesty brings nothing but good' and in another narration: 'Modesty is a branch of faith.'",
       explanationAr = "قال رسول الله ﷺ: {الحياء لا يأتي إلا بخير}، وفي صحيح مسلم: {الحياء شعبة من الإيمان}، فهو يمنع من ارتكاب المعاصي ويدعو لكل مكرمة.",
       category = QuizCategory.MANNERS,
@@ -92,15 +92,15 @@ object MannersQuestionData {
       questionAr = "كيف صور القرآن الكريم شناعة وقبح الغيبة في سورة الحجرات؟",
       optionsEn = listOf(
         "Like burning a fruitful tree",
-        "Like throwing stones into water",
-        "Like eating the flesh of one's dead brother",
-        "Like walking in the desert without water"
+        "Like throwing stones in water",
+        "Like eating your dead brother",
+        "Like walking without a guide"
       ),
       optionsAr = listOf(
         "كإحراق شجرة مثمرة",
         "كإلقاء حجر في بئر عميقة",
-        "كَأَكْلِ لَحْمِ الْأَخِ الْمَيْتِ",
-        "كالمشي في الصحراء بغير زاد"
+        "كأكل لحم الأخ الميت",
+        "كالمشي في الصحراء بلا زاد"
       ),
       correctAnswerIndex = 2,
       explanationEn = "Surah Al-Hujurat (49:12) asks: 'Would one of you like to eat the flesh of his dead brother? You would despise it. And fear Allah.'",
@@ -116,16 +116,16 @@ object MannersQuestionData {
       questionEn = "What is the consequence of severing ties of kinship (Qat' ar-Rahim) according to authentic Hadith?",
       questionAr = "ما هو الوعيد النبوي الشديد الوارد في شأن قاطع الرحم؟",
       optionsEn = listOf(
-        "His worldly wealth increases",
-        "He is exempted from fasting",
-        "It has no bearing on salvation",
-        "The severer of ties will not enter Paradise"
+        "He loses only worldly wealth",
+        "He misses rewards of charity",
+        "He faces a minor warning only",
+        "He will not enter Paradise"
       ),
       optionsAr = listOf(
-        "تزداد بركة ماله",
-        "يُعفى من أداء الصدقات",
-        "أمر دنيوي لا علاقة له بالآخرة",
-        "لَا يَدْخُلُ الْجَنَّةَ قَاطِعُ رَحِمٍ"
+        "تنقص بركة ماله في الدنيا",
+        "يحرم من مضاعفة الصدقات",
+        "ينال عقوبة دنيوية بسيطة فقط",
+        "لا يدخل الجنة قاطع رحم"
       ),
       correctAnswerIndex = 3,
       explanationEn = "The Prophet ﷺ said: 'The one who severs ties of kinship will not enter Paradise' (Sahih Al-Bukhari 5984), highlighting the paramount sanctity of familial bonds.",
@@ -140,8 +140,8 @@ object MannersQuestionData {
       id = "q_man_10",
       questionEn = "What did the Prophet ﷺ declare about the Muslim who guarantees what is between his jaws (tongue) and legs (chastity)?",
       questionAr = "بماذا وعد النبي ﷺ من يضمن ويحفظ ما بين لحييه (لسانه) وما بين رجليه (فرجه)؟",
-      optionsEn = listOf("A golden crown", "I guarantee for him Paradise", "Lifelong immunity from illness", "Treasures of Rome"),
-      optionsAr = listOf("تاجاً من الياقوت", "ضَمِنْتُ لَهُ الْجَنَّةَ", "العافية الدائمة من الأمراض", "كنوز كسرى وقيصر"),
+      optionsEn = listOf("Golden palaces", "Guarantee of Paradise", "Lifelong health", "Treasures of Rome"),
+      optionsAr = listOf("قصور من الياقوت", "ضمنت له الجنة", "العافية من الأمراض", "كنوز كسرى وقيصر"),
       correctAnswerIndex = 1,
       explanationEn = "The Prophet ﷺ said: 'Whoever guarantees for me what is between his two jaws and what is between his two legs, I will guarantee for him Paradise.'",
       explanationAr = "قال رسول الله ﷺ: {من يضمن لي ما بين لحييه وما بين رجليه أضمن له الجنة}، صيانةً لعفة اللسان عن الفحش والكذب وعفة البدن عن الحرام.",
@@ -156,18 +156,18 @@ object MannersQuestionData {
       questionEn = "What is the Islamic etiquette when sitting in a gathering of three people?",
       questionAr = "ما هو الأدب النبوي الرفيع إذا كان ثلاثة أشخاص معاً في مكان واحد مراعاة للمشاعر؟",
       optionsEn = listOf(
-        "All three must speak simultaneously",
-        "They must stand up immediately",
-        "Two should not whisper privately excluding the third, lest it grieves him",
-        "The youngest must not speak at all"
+        "All three speak together loudly",
+        "Two do not whisper leaving third",
+        "The third person leaves right away",
+        "The youngest remains fully silent"
       ),
       optionsAr = listOf(
-        "أن يتكلم الجميع بصوت مرتفع معاً",
-        "أن يغادر الثالث فوراً",
-        "أَلَّا يَتَنَاجَى اثْنَانِ دُونَ الثَّالِثِ حَتَّى يَخْتَلِطُوا بِالنَّاسِ مَخَافَةَ أَنْ يُحْزِنَهُ",
-        "أن يسكت الأصغر سناً دائماً"
+        "أن يتحدث الجميع بصوت مرتفع",
+        "ألا يتناجى اثنان دون الثالث",
+        "أن يغادر الشخص الثالث المكان",
+        "أن يسكت الأصغر في المجلس"
       ),
-      correctAnswerIndex = 2,
+      correctAnswerIndex = 1,
       explanationEn = "The Prophet ﷺ instructed: 'If you are three, then two should not whisper privately excluding the third until you mix with other people, for that would grieve him.'",
       explanationAr = "قال رسول الله ﷺ: {إذا كنتم ثلاثة فلا يتناجى اثنان دون الآخر حتى تختلطوا بالناس من أجل أن يحزنه}، أدباً إسلامياً رفيعاً لمنع إيغار الصدور وسوء الظن.",
       category = QuizCategory.MANNERS,
@@ -181,16 +181,16 @@ object MannersQuestionData {
       questionEn = "What are the three signs of a hypocrite (Munafiq) outlined in the authentic Hadith?",
       questionAr = "ما هي العلامات الثلاث لـ (المنافق) التي حذر النبي ﷺ من الاتصاف بها في الحديث المشهور؟",
       optionsEn = listOf(
-        "When he speaks he lies, when he promises he breaks it, and when entrusted he betrays",
-        "He dresses in white, walks fast, and wakes early",
-        "He prays long, speaks little, and gives charity",
-        "He travels frequently, reads books, and fasts in winter"
+        "Lies, breaks promises, betrays trust",
+        "Dresses white, walks fast, wakes early",
+        "Speaks little, fasts often, prays long",
+        "Travels often, reads books, works hard"
       ),
       optionsAr = listOf(
-        "إِذَا حَدَّثَ كَذَبَ، وَإِذَا وَعَدَ أَخْلَفَ، وَإِذَا اؤْتُمِنَ خَانَ",
-        "يلبس البياض، ويسرع في مشيه، ويستيقظ فجراً",
-        "يطيل الصلاة، ويقلل الكلام، ويتصدق كثيراً",
-        "يسافر كثيراً، ويقرأ الكتب، ويصوم في الشتاء"
+        "إذا حدث كذب وإذا وعد أخلف وإذا اؤتمن خان",
+        "يلبس البياض ويسرع في المشي ويقوم الليل",
+        "يطيل الصلاة ويقلل الكلام ويكثر الصدقة",
+        "يسافر في الأرض ويقرأ الكتب ويصوم النهار"
       ),
       correctAnswerIndex = 0,
       explanationEn = "The Prophet ﷺ said: 'The signs of a hypocrite are three: whenever he speaks he lies, whenever he promises he breaks his promise, and whenever he is entrusted he betrays the trust.'",
@@ -206,16 +206,16 @@ object MannersQuestionData {
       questionEn = "What is the proper manner of eating taught by the Prophet ﷺ to Umar ibn Abi Salamah?",
       questionAr = "ما هي الآداب النبوية الثلاثة التي علمها النبي ﷺ لربيبه عمر بن أبي سلمة عند الأكل؟",
       optionsEn = listOf(
-        "Eat with both hands, begin from the center, and speak loudly",
-        "Eat while standing, drink quickly, and blow on hot food",
-        "Begin with dessert, eat without washing hands, and avoid bread",
-        "Say Bismillah, eat with your right hand, and eat from what is nearest to you"
+        "Eat with both hands from the center",
+        "Eat standing and drink quickly",
+        "Begin eating from the far side",
+        "Say Bismillah and eat with right hand"
       ),
       optionsAr = listOf(
-        "كل باليدين معاً، وابدأ من وسط الإناء، وتكلم بصوت عالٍ",
-        "كل قائماً، واشرب دفعة واحدة، وانفخ في الطعام الحار",
-        "ابدأ بالحلويات، وكل بغير غسل اليدين، وتجنب الخبز",
-        "سَمِّ اللَّهَ، وَكُلْ بِيَمِينِكَ، وَكُلْ مِمَّا يَلِيكَ"
+        "الأكل باليدين ومن وسط الإناء",
+        "الأكل والشرب في وضع الوقوف",
+        "الأكل من الجانب البعيد عنك",
+        "التسمية والأكل باليمين ومما يليك"
       ),
       correctAnswerIndex = 3,
       explanationEn = "The Prophet ﷺ said to the young boy: 'O boy, mention the Name of Allah (say Bismillah), eat with your right hand, and eat from that which is nearest to you.'",
@@ -231,16 +231,16 @@ object MannersQuestionData {
       questionEn = "What did the Prophet ﷺ teach about removing harmful objects from pathways (Imatat al-Adha)?",
       questionAr = "ما مكانة وفضل (إماطة الأذى عن الطريق) في ميزان العمل الصالح والإيمان؟",
       optionsEn = listOf(
-        "It is reserved only for government workers",
-        "It is disliked to touch fallen branches",
-        "It is an act of charity (Sadaqah) and the lowest branch of faith",
-        "It has no religious reward"
+        "A duty limited to city workers",
+        "A neutral habit with no reward",
+        "An act of charity and part of faith",
+        "An act required only during Eid"
       ),
       optionsAr = listOf(
-        "عمل مقتصر على عمال النظافة فقط",
-        "مكروه ولا ثواب فيه",
-        "صَدَقَةٌ وَأَدْنَى شُعَبِ الْإِيمَانِ وَسَبَبٌ لِمَغْفِرَةِ الذُّنُوبِ",
-        "أمر دنيوي لا صلة له بالإسلام"
+        "عمل خاص بعمال النظافة فقط",
+        "عادة اجتماعية لا ثواب فيها",
+        "صدقة وشعبة من شعب الإيمان",
+        "أمر مستحب في الأعياد فقط"
       ),
       correctAnswerIndex = 2,
       explanationEn = "The Prophet ﷺ said: 'Removing harmful things from the road is an act of charity' and in Muslim: 'Faith has over seventy branches, the lowest of which is removing harm from the path.'",
@@ -255,8 +255,8 @@ object MannersQuestionData {
       id = "q_man_15",
       questionEn = "What did the Prophet ﷺ teach about seeking permission before entering homes (Isti'dhan)?",
       questionAr = "كم مرة يُسن الاستئذان وطرق الباب قبل الانصراف إذا لم يُؤذن للزائر؟",
-      optionsEn = listOf("Once only", "Three times; if permitted enter, otherwise return", "Ten times", "Keep knocking until they open"),
-      optionsAr = listOf("مرة واحدة فقط", "ثَلَاثَ مَرَّاتٍ، فَإِنْ أُذِنَ لَكَ وَإِلَّا فَارْجِعْ", "عشر مرات", "الاستمرار في الطرق حتى يفتحوا"),
+      optionsEn = listOf("Once then leave", "Three times max", "Ten times max", "Keep on knocking"),
+      optionsAr = listOf("مرة واحدة ثم ينصرف", "ثلاث مرات فقط", "عشر مرات فقط", "الاستمرار بلا توقف"),
       correctAnswerIndex = 1,
       explanationEn = "The Prophet ﷺ said: 'Seeking permission is three times; if permission is granted to you, enter; otherwise, go back.'",
       explanationAr = "قال رسول الله ﷺ: {الاستئذان ثلاث، فإن أُذن لك وإلا فارجع} صيانة لحرمات البيوت وخصوصية أهلها وراحتهم.",
@@ -271,16 +271,16 @@ object MannersQuestionData {
       questionEn = "What is the definition of true strength according to the Prophet ﷺ in the authentic Hadith?",
       questionAr = "من هو القوي الحقيقي (الشديد) كما عرفه النبي ﷺ في الحديث الشريف؟",
       optionsEn = listOf(
-        "The one who overpowers opponents in wrestling",
-        "The one who lifts heavy boulders",
-        "The one who accumulates the most weapons",
-        "The one who controls himself during moments of anger"
+        "Who defeats men in wrestling",
+        "Who lifts heavy mountain rocks",
+        "Who owns weapons and wealth",
+        "Who controls himself when angry"
       ),
       optionsAr = listOf(
         "الذي يصرع الرجال في المصارعة",
         "الذي يحمل الأثقال الضخمة",
-        "الذي يملك أسلحة وقوة جسدية فقط",
-        "الَّذِي يَمْلِكُ نَفْسَهُ عِنْدَ الْغَضَبِ"
+        "الذي يملك الأسلحة والقوة فقط",
+        "الذي يملك نفسه عند الغضب"
       ),
       correctAnswerIndex = 3,
       explanationEn = "The Prophet ﷺ said: 'The strong man is not the one who overcomes people in wrestling; rather, the strong man is the one who controls himself when angry.'",
@@ -296,16 +296,16 @@ object MannersQuestionData {
       questionEn = "What is the virtue of spreading the greeting of peace (Salam) among people known and unknown?",
       questionAr = "ما هو الفضل الثابت لإفشاء السلام بين المسلمين من عرفت ومن لم تعرف؟",
       optionsEn = listOf(
-        "It spreads mutual love and leads to faith and entering Paradise",
-        "It is only rewarded when greeting family members",
-        "It is a modern political custom",
-        "It should only be said during daytime"
+        "Brings mutual love and Paradise",
+        "Rewarded only among close kin",
+        "A custom limited to celebrations",
+        "Said only during daylight hours"
       ),
       optionsAr = listOf(
-        "سَبَبٌ لِشُيُوعِ الْمَحَبَّةِ وَكَمَالِ الْإِيمَانِ وَدُخُولِ الْجَنَّةِ",
-        "يُثاب عليه فقط إذا كان المسلم من الأقارب",
-        "عادة اجتماعية لا أجر فيها",
-        "يُقال فقط في النهار دون الليل"
+        "يؤلف القلوب ويدخل الجنة",
+        "يثاب عليه مع الأقارب فقط",
+        "عادة اجتماعية في المناسبات",
+        "يقال في النهار دون الليل"
       ),
       correctAnswerIndex = 0,
       explanationEn = "The Prophet ﷺ said: 'You will not enter Paradise until you believe, and you will not believe until you love one another. Shall I guide you to something that if you do, you will love one another? Spread peace (Salam) amongst yourselves.'",
@@ -321,16 +321,16 @@ object MannersQuestionData {
       questionEn = "What did the Prophet ﷺ state about the person who sponsors an orphan (Kafil al-Yatim)?",
       questionAr = "بماذا بشر النبي ﷺ كافل اليتيم والمنفق عليه في الجنة مشيراً بإصبعيه السبابة والوسطى؟",
       optionsEn = listOf(
-        "He will receive palaces of silver only",
-        "He will be excused from all duties",
-        "He and the Prophet will be like these two fingers in Paradise",
-        "He will not meet the Prophet"
+        "Palaces built of pure silver",
+        "Exempted from daily duties",
+        "Close to the Prophet in Paradise",
+        "Forgiven only for minor slips"
       ),
       optionsAr = listOf(
-        "له قصور من الفضة فقط",
-        "تسقط عنه التكاليف",
-        "أَنَا وَكَافِلُ الْيَتِيمِ فِي الْجَنَّةِ هَكَذَا (وَأَشَارَ بِالسَّبَّابَةِ وَالْوُسْطَى)",
-        "لا يلقى النبي في الجنة"
+        "له قصور من الفضة في الدنيا",
+        "تسقط عنه سائر التكاليف",
+        "قريب من النبي في الجنة",
+        "يعفى من الصدقة والزكاة"
       ),
       correctAnswerIndex = 2,
       explanationEn = "The Prophet ﷺ said: 'I and the one who looks after an orphan will be like this in Paradise,' and he held up his index and middle fingers slightly apart.",

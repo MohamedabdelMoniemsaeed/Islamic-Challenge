@@ -9,6 +9,7 @@ import com.example.data.local.CategoryProgressEntity
 import com.example.data.local.MIGRATION_1_2
 import com.example.data.local.MIGRATION_2_3
 import com.example.data.local.MIGRATION_3_4
+import com.example.data.local.MIGRATION_4_5
 import com.example.data.local.PlayerDao
 import com.example.data.local.PlayerEntity
 import com.example.data.local.UserSettingsEntity
@@ -130,9 +131,9 @@ class RoomMigrationAndStabilityTest {
     )
     v1Db.close()
 
-    // Step 3: Open database with AppDatabase (Version 4) and MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4
+    // Step 3: Open database with AppDatabase (Version 5) and all migrations
     val v3Db = Room.databaseBuilder(context, AppDatabase::class.java, dbName)
-      .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+      .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
       .allowMainThreadQueries()
       .build()
 
@@ -253,9 +254,9 @@ class RoomMigrationAndStabilityTest {
     ).writableDatabase
     v2Db.close()
 
-    // Step 2: Open with AppDatabase v4 and MIGRATION_2_3, MIGRATION_3_4
+    // Step 2: Open with AppDatabase v5 and MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5
     val v3Db = Room.databaseBuilder(context, AppDatabase::class.java, dbName)
-      .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
+      .addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
       .allowMainThreadQueries()
       .build()
 
@@ -365,9 +366,9 @@ class RoomMigrationAndStabilityTest {
     )
     v3Db.close()
 
-    // Step 2: Open with AppDatabase v4 and MIGRATION_3_4
+    // Step 2: Open with AppDatabase v5 and MIGRATION_3_4, MIGRATION_4_5
     val v4Db = Room.databaseBuilder(context, AppDatabase::class.java, dbName)
-      .addMigrations(MIGRATION_3_4)
+      .addMigrations(MIGRATION_3_4, MIGRATION_4_5)
       .allowMainThreadQueries()
       .build()
 
@@ -375,6 +376,7 @@ class RoomMigrationAndStabilityTest {
     assertNotNull(settings)
     assertTrue("Notifications must default to enabled in migration", settings!!.notificationsEnabled)
     assertFalse("In-app banner must default to false in migration", settings.showInAppBanner)
+    assertTrue("Hourly Salawat must default to enabled in migration", settings.hourlySalawatEnabled)
     assertTrue(settings.soundEnabled)
 
     v4Db.close()

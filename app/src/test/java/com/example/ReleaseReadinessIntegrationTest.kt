@@ -13,6 +13,7 @@ import com.example.data.local.CategoryProgressEntity
 import com.example.data.local.MIGRATION_1_2
 import com.example.data.local.MIGRATION_2_3
 import com.example.data.local.MIGRATION_3_4
+import com.example.data.local.MIGRATION_4_5
 import com.example.data.local.PlayerDao
 import com.example.data.models.GameMode
 import com.example.data.models.LifelineType
@@ -201,9 +202,9 @@ class ReleaseReadinessIntegrationTest {
     )
     v1Db.close()
 
-    // Step 2: Open with AppDatabase v4 applying MIGRATION_1_2, MIGRATION_2_3, and MIGRATION_3_4
+    // Step 2: Open with AppDatabase v5 applying MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, and MIGRATION_4_5
     val v3Db = Room.databaseBuilder(context, AppDatabase::class.java, dbName)
-      .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+      .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
       .allowMainThreadQueries()
       .build()
 

@@ -162,4 +162,61 @@ class ContentAuditAndValidationTest {
     val daily2 = questionRepository.getQuestionsForMode(GameMode.DAILY_CHALLENGE)
     assertEquals("Daily challenge questions must be consistent for the same day", daily1.map { it.id }, daily2.map { it.id })
   }
+
+  @Test
+  fun testOptionFormattingUniformityAndNoGiveaways() {
+    val allQuestions = questionRepository.getAllQuestions()
+    val diacriticsRegex = Regex("[\u064B-\u065F\u0670]")
+    val giveaways = mutableListOf<String>()
+    val indexCounts = mutableMapOf<Int, Int>()
+
+    for (q in allQuestions) {
+      indexCounts[q.correctAnswerIndex] = (indexCounts[q.correctAnswerIndex] ?: 0) + 1
+      val correctAr = q.optionsAr[q.correctAnswerIndex]
+      val correctEn = q.optionsEn[q.correctAnswerIndex]
+      val distractorsAr = q.optionsAr.filterIndexed { i, _ -> i != q.correctAnswerIndex }
+      val distractorsEn = q.optionsEn.filterIndexed { i, _ -> i != q.correctAnswerIndex }
+
+      // 1. No Arabic diacritics in any Arabic option
+      q.optionsAr.forEachIndexed { idx, opt ->
+        if (diacriticsRegex.containsMatchIn(opt)) {
+          giveaways.add("${q.id} optionsAr[$idx] contains tashkeel: '$opt'")
+        }
+      }
+
+      // 2. No exclusive parentheses, ellipses, or honorific tags on correct choice
+      val honorifics = listOf("رضي الله", "عليه السلام", "عليها السلام", "ﷺ", "(", ")", "...")
+      for (marker in honorifics) {
+        if (correctAr.contains(marker) && distractorsAr.none { it.contains(marker) }) {
+          giveaways.add("${q.id} correctAr has exclusive '$marker': '$correctAr'")
+        }
+        if (correctEn.contains(marker) && distractorsEn.none { it.contains(marker) }) {
+          giveaways.add("${q.id} correctEn has exclusive '$marker': '$correctEn'")
+        }
+      }
+
+      // 3. Length fairness: correct option must not be noticeably longer than distractors
+      val avgAr = distractorsAr.map { it.length }.average()
+      val maxAr = distractorsAr.maxOf { it.length }
+      if (correctAr.length > maxOf((avgAr * 1.45).toInt(), maxAr + 6)) {
+        giveaways.add("${q.id} correctAr too long (${correctAr.length} vs max=$maxAr, avg=$avgAr): '$correctAr' vs $distractorsAr")
+      }
+
+      val avgEn = distractorsEn.map { it.length }.average()
+      val maxEn = distractorsEn.maxOf { it.length }
+      if (correctEn.length > maxOf((avgEn * 1.45).toInt(), maxEn + 6)) {
+        giveaways.add("${q.id} correctEn too long (${correctEn.length} vs max=$maxEn, avg=$avgEn): '$correctEn' vs $distractorsEn")
+      }
+    }
+
+    assertTrue(
+      "Found formatting/length giveaways in question options:\n${giveaways.joinToString("\n")}",
+      giveaways.isEmpty()
+    )
+
+    for (pos in 0..3) {
+      val count = indexCounts[pos] ?: 0
+      assertTrue("Expected well-balanced index $pos (>=25), but was $count", count >= 25)
+    }
+  }
 }

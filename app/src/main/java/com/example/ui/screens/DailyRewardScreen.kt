@@ -114,6 +114,7 @@ fun DailyRewardScreen(
       StreakBanner(
         currentStreak = profile.currentStreak,
         longestStreak = profile.longestStreak,
+        isArabic = isAr,
         strings = strings
       )
 
@@ -210,6 +211,7 @@ fun DailyRewardScreen(
 private fun StreakBanner(
   currentStreak: Int,
   longestStreak: Int,
+  isArabic: Boolean,
   strings: com.example.core.localization.AppStrings
 ) {
   Card(
@@ -268,7 +270,7 @@ private fun StreakBanner(
           color = GoldContainer
         ) {
           Text(
-            text = "Active 🔥",
+            text = if (isArabic) "نشط 🔥" else "Active 🔥",
             fontWeight = FontWeight.Bold,
             fontSize = 12.sp,
             color = Color(0xFF78350F),

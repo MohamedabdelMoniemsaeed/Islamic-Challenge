@@ -106,7 +106,7 @@ fun DailyChallengeHeroCard(
               color = MaterialTheme.colorScheme.onSurface
             )
             Text(
-              text = if (isArabic) "١٠ أسئلة يومية متجددة" else "10 curated questions",
+              text = if (isArabic) "٥ أسئلة يومية متجددة" else "5 curated questions",
               style = MaterialTheme.typography.bodySmall,
               color = MaterialTheme.colorScheme.onSurfaceVariant
             )

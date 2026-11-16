@@ -1,19 +1,31 @@
 package com.example.core.audio
 
 import android.content.Context
+import android.media.AudioAttributes
 import android.media.AudioManager
+import android.media.MediaPlayer
 import android.media.ToneGenerator
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import kotlin.math.PI
+import kotlin.math.sin
 
 /**
- * AudioFeedbackManager provides safe, lightweight audio and haptic feedback
- * across all game interactions without external audio file dependencies.
+ * AudioFeedbackManager provides safe, lightweight audio, serene ambient background pad,
+ * and haptic feedback across all game interactions without external audio file dependencies.
  */
 class AudioFeedbackManager(private val context: Context) {
   private var toneGenerator: ToneGenerator? = null
+  private var ambientPlayer: MediaPlayer? = null
+  private var ambientEnabled: Boolean = false
+  private var currentVolume: Float = 0.8f
 
   init {
     initToneGenerator(80)
@@ -30,8 +42,139 @@ class AudioFeedbackManager(private val context: Context) {
   }
 
   fun updateVolume(volume: Float) {
-    val volumePercent = (volume * 100).toInt()
+    currentVolume = volume.coerceIn(0.1f, 1.0f)
+    val volumePercent = (currentVolume * 100).toInt()
     initToneGenerator(volumePercent)
+    try {
+      val bgVol = currentVolume * 0.22f
+      ambientPlayer?.setVolume(bgVol, bgVol)
+    } catch (_: Throwable) {}
+  }
+
+  fun setAmbientMusicEnabled(enabled: Boolean) {
+    ambientEnabled = enabled
+    if (enabled) {
+      startAmbientMusic()
+    } else {
+      stopAmbientMusic()
+    }
+  }
+
+  fun onAppForeground() {
+    if (ambientEnabled) {
+      startAmbientMusic()
+    }
+  }
+
+  fun onAppBackground() {
+    try {
+      if (ambientPlayer?.isPlaying == true) {
+        ambientPlayer?.pause()
+      }
+    } catch (_: Throwable) {}
+  }
+
+  private fun startAmbientMusic() {
+    try {
+      ambientPlayer?.let { player ->
+        if (!player.isPlaying) {
+          val bgVol = currentVolume * 0.22f
+          player.setVolume(bgVol, bgVol)
+          player.start()
+        }
+        return
+      }
+
+      val wavFile = ensureAmbientLoopWav() ?: return
+      val player = MediaPlayer().apply {
+        setAudioAttributes(
+          AudioAttributes.Builder()
+            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+            .setUsage(AudioAttributes.USAGE_GAME)
+            .build()
+        )
+        FileInputStream(wavFile).use { fis ->
+          setDataSource(fis.fd)
+        }
+        isLooping = true
+        val bgVol = currentVolume * 0.22f
+        setVolume(bgVol, bgVol)
+        prepare()
+        start()
+      }
+      ambientPlayer = player
+    } catch (_: Throwable) {
+      // Safe fallback in Robolectric / headless test runners
+    }
+  }
+
+  fun stopAmbientMusic() {
+    try {
+      ambientPlayer?.let { player ->
+        if (player.isPlaying) {
+          player.stop()
+        }
+        player.release()
+      }
+    } catch (_: Throwable) {}
+    ambientPlayer = null
+  }
+
+  private fun ensureAmbientLoopWav(): File? {
+    val file = File(context.cacheDir, "serene_ambient_pad.wav")
+    if (file.exists() && file.length() > 20_000L) return file
+
+    return try {
+      val sampleRate = 16000
+      val durationSec = 6.0
+      val totalSamples = (sampleRate * durationSec).toInt()
+      val pcmData = ShortArray(totalSamples)
+
+      // Soft, seamless looping warm harmonic drone (D3 + A3 + F#4)
+      val baseFreqs = doubleArrayOf(146.83, 220.00, 293.66)
+      for (i in 0 until totalSamples) {
+        val t = i.toDouble() / sampleRate
+        val mod = 0.75 + 0.25 * sin(2.0 * PI * (1.0 / durationSec) * t)
+        var sum = 0.0
+        for ((idx, f) in baseFreqs.withIndex()) {
+          val cycles = kotlin.math.round(f * durationSec)
+          val exactF = cycles / durationSec
+          sum += sin(2.0 * PI * exactF * t) * (0.28 / (idx + 1))
+        }
+        val sample = (sum * mod).coerceIn(-0.9, 0.9)
+        pcmData[i] = (sample * Short.MAX_VALUE).toInt().toShort()
+      }
+
+      val dataSize = totalSamples * 2
+      val header = ByteBuffer.allocate(44).order(ByteOrder.LITTLE_ENDIAN).apply {
+        put("RIFF".toByteArray(Charsets.US_ASCII))
+        putInt(36 + dataSize)
+        put("WAVE".toByteArray(Charsets.US_ASCII))
+        put("fmt ".toByteArray(Charsets.US_ASCII))
+        putInt(16)
+        putShort(1)
+        putShort(1)
+        putInt(sampleRate)
+        putInt(sampleRate * 2)
+        putShort(2)
+        putShort(16)
+        put("data".toByteArray(Charsets.US_ASCII))
+        putInt(dataSize)
+      }
+
+      val body = ByteBuffer.allocate(dataSize).order(ByteOrder.LITTLE_ENDIAN)
+      for (s in pcmData) {
+        body.putShort(s)
+      }
+
+      FileOutputStream(file).use { fos ->
+        fos.write(header.array())
+        fos.write(body.array())
+      }
+      file
+    } catch (_: Throwable) {
+      null
+    }
   }
 
   fun playCorrectFeedback(soundEnabled: Boolean, vibrationEnabled: Boolean, volume: Float = 0.8f) {

@@ -18,13 +18,14 @@ class AdMobInterstitialManager(
   companion object {
     const val TAG = "AdMobInterstitial"
     const val AD_UNIT_ID = "ca-app-pub-5106987776038143/1803650344"
-    // AdMob Policy compliance: Minimum 45 seconds between interstitial ads to protect user experience
-    private const val MIN_INTERVAL_MS = 45_000L
+    // AdMob Policy compliance: Generous 90-second cooldown between interstitial ads
+    private const val MIN_INTERVAL_MS = 90_000L
   }
 
   private var interstitialAd: InterstitialAd? = null
   private var isLoading: Boolean = false
   private var lastShowTimeMs: Long = 0L
+  private var completedRoundsInSession: Int = 0
 
   init {
     preloadAd()
@@ -56,17 +57,17 @@ class AdMobInterstitialManager(
   }
 
   /**
-   * Shows the interstitial ad if available and policy cooldown has elapsed.
-   * If not available or cooldown hasn't passed, immediately invokes [onComplete]
-   * so the user flow is never blocked.
+   * Shows the interstitial ad at natural round completion boundaries when cooldown has elapsed,
+   * skipping the very first completed round of a session for smooth onboarding/first-play UX.
    */
   fun showInterstitialIfReady(activity: Activity?, onComplete: () -> Unit) {
+    completedRoundsInSession++
     val ad = interstitialAd
     val now = SystemClock.elapsedRealtime()
-    val canShow = ad != null && activity != null && (now - lastShowTimeMs >= MIN_INTERVAL_MS)
+    val cooldownPassed = lastShowTimeMs == 0L || (now - lastShowTimeMs >= MIN_INTERVAL_MS)
+    val canShow = completedRoundsInSession >= 2 && ad != null && activity != null && cooldownPassed
 
     if (!canShow || ad == null || activity == null) {
-      // Preload next if not ready
       if (interstitialAd == null) {
         preloadAd()
       }
@@ -76,7 +77,6 @@ class AdMobInterstitialManager(
 
     ad.fullScreenContentCallback = object : FullScreenContentCallback() {
       override fun onAdDismissedFullScreenContent() {
-        Log.d(TAG, "Interstitial ad dismissed by user")
         interstitialAd = null
         lastShowTimeMs = SystemClock.elapsedRealtime()
         preloadAd()
@@ -84,14 +84,12 @@ class AdMobInterstitialManager(
       }
 
       override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-        Log.w(TAG, "Interstitial ad failed to show: ${adError.message}")
         interstitialAd = null
         preloadAd()
         onComplete()
       }
 
       override fun onAdShowedFullScreenContent() {
-        Log.d(TAG, "Interstitial ad displayed on screen")
         interstitialAd = null
       }
     }

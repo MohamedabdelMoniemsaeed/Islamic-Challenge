@@ -14,7 +14,8 @@ data class UserSettingsEntity(
   val themeMode: String = "SYSTEM", // "SYSTEM", "LIGHT", "DARK"
   val languageCode: String = "ARABIC", // "ARABIC", "ENGLISH"
   val notificationsEnabled: Boolean = true,
-  val showInAppBanner: Boolean = false
+  val showInAppBanner: Boolean = false,
+  val hourlySalawatEnabled: Boolean = true
 ) {
   fun toLanguage(): AppLanguage {
     return if (languageCode.equals("ENGLISH", ignoreCase = true)) {
@@ -41,7 +42,8 @@ data class UserSettingsEntity(
       darkMode: Boolean?,
       language: AppLanguage,
       notificationsEnabled: Boolean = true,
-      showInAppBanner: Boolean = false
+      showInAppBanner: Boolean = false,
+      hourlySalawatEnabled: Boolean = true
     ): UserSettingsEntity {
       val themeStr = when (darkMode) {
         true -> "DARK"
@@ -57,7 +59,8 @@ data class UserSettingsEntity(
         themeMode = themeStr,
         languageCode = language.name,
         notificationsEnabled = notificationsEnabled,
-        showInAppBanner = showInAppBanner
+        showInAppBanner = showInAppBanner,
+        hourlySalawatEnabled = hourlySalawatEnabled
       )
     }
   }

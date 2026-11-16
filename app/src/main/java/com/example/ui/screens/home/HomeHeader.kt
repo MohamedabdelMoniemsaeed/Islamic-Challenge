@@ -44,6 +44,7 @@ fun HomeHeader(
   strings: AppStrings,
   onProfileClick: () -> Unit,
   onSettingsClick: () -> Unit,
+  onCoinsClick: () -> Unit = onProfileClick,
   modifier: Modifier = Modifier
 ) {
   Surface(
@@ -132,12 +133,12 @@ fun HomeHeader(
           }
         }
 
-        // Coins Chip
+        // Coins Chip -> Opens Lifelines Store
         Surface(
           shape = RoundedCornerShape(14.dp),
           color = EmeraldPrimary.copy(alpha = 0.12f),
           modifier = Modifier
-            .clickable { onProfileClick() }
+            .clickable { onCoinsClick() }
             .testTag("home_coins_chip")
         ) {
           Row(

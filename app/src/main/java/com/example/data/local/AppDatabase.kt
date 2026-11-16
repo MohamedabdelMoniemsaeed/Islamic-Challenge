@@ -45,6 +45,14 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
   }
 }
 
+val MIGRATION_4_5 = object : Migration(4, 5) {
+  override fun migrate(db: SupportSQLiteDatabase) {
+    db.execSQL(
+      "ALTER TABLE `user_settings` ADD COLUMN `hourlySalawatEnabled` INTEGER NOT NULL DEFAULT 1"
+    )
+  }
+}
+
 @Database(
   entities = [
     PlayerEntity::class,
@@ -52,7 +60,7 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
     AchievementEntity::class,
     UserSettingsEntity::class
   ],
-  version = 4,
+  version = 5,
   exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -69,7 +77,7 @@ abstract class AppDatabase : RoomDatabase() {
           AppDatabase::class.java,
           "islamic_challenge.db"
         )
-          .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+          .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
           .fallbackToDestructiveMigration(false)
           .build()
         INSTANCE = instance

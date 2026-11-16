@@ -80,6 +80,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
   private val _showInAppBanner = MutableStateFlow(false)
   val showInAppBanner: StateFlow<Boolean> = _showInAppBanner.asStateFlow()
 
+  private val _hourlySalawatEnabled = MutableStateFlow(true)
+  val hourlySalawatEnabled: StateFlow<Boolean> = _hourlySalawatEnabled.asStateFlow()
+
   private val _claimedRewardMessage = MutableStateFlow<DailyRewardDay?>(null)
   val claimedRewardMessage: StateFlow<DailyRewardDay?> = _claimedRewardMessage.asStateFlow()
 
@@ -95,10 +98,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
       _isDarkMode.value = settings.toDarkModeBoolean()
       _notificationsEnabled.value = settings.notificationsEnabled
       _showInAppBanner.value = settings.showInAppBanner
+      _hourlySalawatEnabled.value = settings.hourlySalawatEnabled
       audioManager.updateVolume(settings.soundVolume)
+      audioManager.setAmbientMusicEnabled(settings.musicEnabled)
+
+      notificationManager.saveNotificationPreferences(
+        notificationsEnabled = settings.notificationsEnabled,
+        hourlySalawatEnabled = settings.hourlySalawatEnabled,
+        isArabic = settings.toLanguage() == AppLanguage.ARABIC
+      )
 
       if (settings.notificationsEnabled) {
         notificationManager.scheduleDailyReminder()
+      }
+      if (settings.hourlySalawatEnabled) {
+        notificationManager.ensureHourlySalawatScheduled()
       }
     }
   }
@@ -116,6 +130,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
   fun toggleMusic(enabled: Boolean) {
     _musicEnabled.value = enabled
+    audioManager.setAmbientMusicEnabled(enabled)
     persistSettings()
   }
 
@@ -151,12 +166,37 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     persistSettings()
   }
 
+  fun toggleHourlySalawat(enabled: Boolean) {
+    _hourlySalawatEnabled.value = enabled
+    if (enabled) {
+      notificationManager.scheduleHourlySalawatReminder()
+    } else {
+      notificationManager.cancelHourlySalawatReminder()
+    }
+    persistSettings()
+  }
+
   fun sendTestNotification() {
     val isAr = _language.value == AppLanguage.ARABIC
     notificationManager.sendTestNotification(isAr)
   }
 
+  fun sendTestSalawatReminder() {
+    val isAr = _language.value == AppLanguage.ARABIC
+    notificationManager.sendSalawatNotification(isAr)
+    com.example.core.notification.SalawatVoicePlayer.speakSalawat(
+      context = getApplication(),
+      pendingResult = null,
+      isManualTest = true
+    )
+  }
+
   private fun persistSettings() {
+    notificationManager.saveNotificationPreferences(
+      notificationsEnabled = _notificationsEnabled.value,
+      hourlySalawatEnabled = _hourlySalawatEnabled.value,
+      isArabic = _language.value == AppLanguage.ARABIC
+    )
     viewModelScope.launch {
       val entity = UserSettingsEntity.fromPreferences(
         sound = _soundEnabled.value,
@@ -166,7 +206,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         darkMode = _isDarkMode.value,
         language = _language.value,
         notificationsEnabled = _notificationsEnabled.value,
-        showInAppBanner = _showInAppBanner.value
+        showInAppBanner = _showInAppBanner.value,
+        hourlySalawatEnabled = _hourlySalawatEnabled.value
       )
       playerRepository.updateUserSettings(entity)
     }
@@ -211,5 +252,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     return AchievementsProvider.allAchievements.map { ach ->
       ach.copy(isUnlocked = unlockedIds.contains(ach.id))
     }
+  }
+
+  override fun onCleared() {
+    super.onCleared()
+    audioManager.stopAmbientMusic()
   }
 }

@@ -1,5 +1,6 @@
 package com.example.core.notification
 
+import android.app.AlarmManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -11,12 +12,16 @@ class DailyReminderReceiver : BroadcastReceiver() {
 
     when (intent?.action) {
       Intent.ACTION_BOOT_COMPLETED,
-      Intent.ACTION_MY_PACKAGE_REPLACED -> {
-        // Re-schedule alarm on reboot
-        notificationManager.scheduleDailyReminder()
+      Intent.ACTION_MY_PACKAGE_REPLACED,
+      Intent.ACTION_TIME_CHANGED,
+      Intent.ACTION_TIMEZONE_CHANGED,
+      AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED -> {
+        // Re-schedule prayer Adhan alarms, daily reminder, and hourly Salawat reminder
+        notificationManager.rescheduleAllFromPrefs()
       }
       else -> {
-        // Daily alarm triggered
+        if (!notificationManager.isNotificationsEnabled()) return
+
         val reminders = listOf(
           Pair(
             "🌙 تحدي المعرفة الإسلامية",

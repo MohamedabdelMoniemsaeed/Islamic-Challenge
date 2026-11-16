@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.HourglassBottom
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.Button
@@ -57,6 +58,7 @@ fun GameModesSection(
   onStartPracticeMode: () -> Unit,
   onStartTimeChallenge: () -> Unit,
   onStartSurvivalMode: () -> Unit,
+  onStartLevelMode: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
   Column(modifier = modifier.fillMaxWidth()) {
@@ -124,7 +126,7 @@ fun GameModesSection(
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier
               .fillMaxWidth()
-              .height(38.dp)
+              .height(40.dp)
               .testTag("quick_challenge_start_btn")
           ) {
             Text(
@@ -188,7 +190,7 @@ fun GameModesSection(
             shape = RoundedCornerShape(10.dp),
             modifier = Modifier
               .fillMaxWidth()
-              .height(38.dp)
+              .height(40.dp)
               .testTag("category_challenge_choose_btn")
           ) {
             Text(
@@ -204,14 +206,14 @@ fun GameModesSection(
 
     Spacer(modifier = Modifier.height(12.dp))
 
-    // Secondary modes row
+    // Secondary modes 2x2 grid (Practice, Time, Survival, Level Mode)
     Row(
       modifier = Modifier.fillMaxWidth(),
       horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
       ModeMiniTile(
         title = strings.practiceMode,
-        subtitle = if (isArabic) "بلا وقت" else "Untimed",
+        subtitle = if (isArabic) "تعلّم بلا وقت" else "Untimed learning",
         icon = Icons.AutoMirrored.Filled.MenuBook,
         testTag = "practice_mode_card",
         modifier = Modifier.weight(1f),
@@ -220,20 +222,36 @@ fun GameModesSection(
 
       ModeMiniTile(
         title = strings.timeChallenge,
-        subtitle = if (isArabic) "٦٠ ثانية" else "60s rapid",
+        subtitle = if (isArabic) "سباق ٦٠ ثانية" else "60s rapid sprint",
         icon = Icons.Filled.HourglassBottom,
         testTag = "time_challenge_card",
         modifier = Modifier.weight(1f),
         onClick = onStartTimeChallenge
       )
+    }
 
+    Spacer(modifier = Modifier.height(10.dp))
+
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
       ModeMiniTile(
         title = strings.survivalMode,
-        subtitle = if (isArabic) "فرصة واحدة" else "1 life",
+        subtitle = if (isArabic) "فرصة واحدة" else "One life challenge",
         icon = Icons.Filled.Shield,
         testTag = "survival_mode_card",
         modifier = Modifier.weight(1f),
         onClick = onStartSurvivalMode
+      )
+
+      ModeMiniTile(
+        title = strings.levelMode,
+        subtitle = if (isArabic) "صعوبة متدرجة" else "Easy to Expert",
+        icon = Icons.Filled.EmojiEvents,
+        testTag = "level_mode_card",
+        modifier = Modifier.weight(1f),
+        onClick = onStartLevelMode
       )
     }
   }

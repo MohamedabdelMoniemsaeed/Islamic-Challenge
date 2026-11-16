@@ -529,6 +529,7 @@ private fun OptionsSection(
       OptionItemCard(
         text = optionText,
         index = index,
+        isArabic = isArabic,
         isSelected = isSelected,
         isSubmitted = isSubmitted,
         isLocked = isLocked,
@@ -544,6 +545,7 @@ private fun OptionsSection(
 private fun OptionItemCard(
   text: String,
   index: Int,
+  isArabic: Boolean,
   isSelected: Boolean,
   isSubmitted: Boolean,
   isLocked: Boolean,
@@ -570,11 +572,20 @@ private fun OptionItemCard(
     label = "optionBorderColor"
   )
 
-  val optionLetter = when (index) {
-    0 -> "أ"
-    1 -> "ب"
-    2 -> "ج"
-    else -> "د"
+  val optionLetter = if (isArabic) {
+    when (index) {
+      0 -> "أ"
+      1 -> "ب"
+      2 -> "ج"
+      else -> "د"
+    }
+  } else {
+    when (index) {
+      0 -> "A"
+      1 -> "B"
+      2 -> "C"
+      else -> "D"
+    }
   }
 
   val isClickable = !isLocked && !isSubmitted && !isEliminated

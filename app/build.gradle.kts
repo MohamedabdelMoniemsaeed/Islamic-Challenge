@@ -17,8 +17,8 @@ android {
     applicationId = "com.aistudio.islamicchallenge.qzwv"
     minSdk = 24
     targetSdk = 36
-    versionCode = 6
-    versionName = "6.0"
+    versionCode = 9
+    versionName = "9.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }

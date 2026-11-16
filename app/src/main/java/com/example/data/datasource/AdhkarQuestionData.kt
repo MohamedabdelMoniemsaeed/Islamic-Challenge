@@ -12,14 +12,14 @@ object AdhkarQuestionData {
       questionAr = "ما هو الذكر النبوي الجليل المسمى بـ (سيد الاستغفار) الذي من قاله موقناً به فمات دخل الجنة؟",
       optionsEn = listOf(
         "Astaghfirullahal-Azim wa atubu ilayh",
-        "Allahumma Anta Rabbi la ilaha illa Anta khalaqtani wa ana 'abduk...",
-        "Rabbana zalamna anfusana",
-        "Rabbighfir li wa liwalidayya"
+        "Allahumma Anta Rabbi la ilaha illa Anta",
+        "Rabbana zalamna anfusana faghfir lana",
+        "Rabbighfir li wa liwalidayya wal-mu'minin"
       ),
       optionsAr = listOf(
-        "أستغفر الله العظيم وأتوب إليه",
-        "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ...",
-        "ربنا ظلمنا أنفسنا وإن لم تغفر لنا وترحمنا لنكونن من الخاسرين",
+        "أستغفر الله العظيم وأتوب إليه من كل ذنب",
+        "اللهم أنت ربي لا إله إلا أنت خلقتني",
+        "ربنا ظلمنا أنفسنا وإن لم تغفر لنا",
         "رب اغفر لي ولوالدي وللمؤمنين والمؤمنات"
       ),
       correctAnswerIndex = 1,
@@ -35,9 +35,9 @@ object AdhkarQuestionData {
       id = "q_adh_5",
       questionEn = "What did the Prophet ﷺ describe as a treasure from the treasures of Paradise (Kanz min kunuz al-Jannah)?",
       questionAr = "ما هي الكلمة العظيمة التي أخبر النبي ﷺ أبا موسى الأشعري أنها (كنز من كنوز الجنة)؟",
-      optionsEn = listOf("SubhanAllah", "La hawla wa la quwwata illa billah", "Alhamdulillah", "Allahu Akbar"),
-      optionsAr = listOf("سبحان الله وبحمده", "لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ", "الحمد لله رب العالمين", "الله أكبر كبيراً"),
-      correctAnswerIndex = 1,
+      optionsEn = listOf("SubhanAllahi wa bihamdih", "Alhamdulillahi Rabbil-Alamin", "La hawla wa la quwwata illa billah", "Allahu Akbar Kabira"),
+      optionsAr = listOf("سبحان الله وبحمده", "الحمد لله رب العالمين", "لا حول ولا قوة إلا بالله", "الله أكبر كبيرا"),
+      correctAnswerIndex = 2,
       explanationEn = "The Prophet ﷺ said: 'Shall I not guide you to a treasure from the treasures of Paradise? It is: La hawla wa la quwwata illa billah (There is no power nor strength except with Allah).'",
       explanationAr = "قال رسول الله ﷺ لأبي موسى الأشعري: {ألا أدلك على كلمة هي كنز من كنوز الجنة؟ لا حول ولا قوة إلا بالله}.",
       category = QuizCategory.ADHKAR,
@@ -50,9 +50,9 @@ object AdhkarQuestionData {
       id = "q_adh_6",
       questionEn = "What is the recommended dhikr count said after completing each prescribed prayer: SubhanAllah, Alhamdulillah, Allahu Akbar?",
       questionAr = "كم مرة يُسبح ويحمد ويكبر المسلم دبر كل صلاة مكتوبة كما جاء في الحديث المتفق عليه؟",
-      optionsEn = listOf("10 times each", "25 times each", "33 times each", "99 times each"),
-      optionsAr = listOf("١٠ مرات لكل منها", "٢٥ مرة", "٣٣ مرة لكل من التسبيح والتحميد والتكبير", "٩٩ مرة معاً"),
-      correctAnswerIndex = 2,
+      optionsEn = listOf("10 times each", "25 times each", "99 times each", "33 times each"),
+      optionsAr = listOf("١٠ مرات", "٢٥ مرة", "٩٩ مرة", "٣٣ مرة"),
+      correctAnswerIndex = 3,
       explanationEn = "Saying SubhanAllah (33 times), Alhamdulillah (33 times), Allahu Akbar (33 times), and concluding with the 100th: 'La ilaha illallah wahdahu la sharika lah...' expiates sins even if like foam of the sea.",
       explanationAr = "يسن أن يسبح الله ٣٣، ويحمده ٣٣، ويكبره ٣٣، ويتم المائة بقول: {لا إله إلا الله وحده لا شريك له له الملك وله الحمد وهو على كل شيء قدير} فتُغفر خطاياه وإن كانت مثل زبد البحر.",
       category = QuizCategory.ADHKAR,
@@ -67,15 +67,15 @@ object AdhkarQuestionData {
       questionAr = "ماذا يقول المسلم عند خروجه من بيته ليُقال له: (كُفيت وهُديت ووُقيت وتَنَحَّى عنه الشيطان)؟",
       optionsEn = listOf(
         "Subhanal-ladhi sakh-khara lana hadha",
-        "Allahumma inni a'udhu bika minal-khubthi wal-khaba'ith",
-        "Alhamdulillahilladhi ahyana ba'da ma amatana",
-        "Bismillah, tawakkaltu 'alallah, wa la hawla wa la quwwata illa billah"
+        "Allahumma inni a'udhu bika minal-khubth",
+        "Alhamdulillahil-ladhi ahyana ba'da ma amatana",
+        "Bismillah tawakkaltu alallah la hawla illa billah"
       ),
       optionsAr = listOf(
         "سبحان الذي سخر لنا هذا وما كنا له مقرنين",
         "اللهم إني أعوذ بك من الخبث والخبائث",
         "الحمد لله الذي أحيانا بعد ما أماتنا وإليه النشور",
-        "بِسْمِ اللَّهِ، تَوَكَّلْتُ عَلَى اللَّهِ، وَلَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ"
+        "بسم الله توكلت على الله لا حول ولا قوة إلا بالله"
       ),
       correctAnswerIndex = 3,
       explanationEn = "The Prophet ﷺ taught: When a person says 'In the name of Allah, I place my trust in Allah, and there is no might nor power except in Allah', the angels say: You have been guided, defended, and protected.",
@@ -91,15 +91,15 @@ object AdhkarQuestionData {
       questionEn = "What dua is recited when mounting a vehicle or embarking upon a journey?",
       questionAr = "ما هو الدعاء القرآني المسنون عند ركوب الدابة أو السيارة أو وسيلة السفر؟",
       optionsEn = listOf(
-        "Rabbi zidni 'ilma",
-        "Hasbunallahu wa ni'mal wakeel",
-        "Subhanal-ladhi sakh-khara lana hadha wa ma kunna lahu muqrinin, wa inna ila Rabbina lamunqalibun",
-        "Rabbana hab lana min azwajina"
+        "Rabbana la tuzigh quloobana ba'da idh hadaytana",
+        "HasbunAllahu wa ni'mal-wakeel ni'mal-mawla",
+        "Subhanal-ladhi sakh-khara lana hadha wa ma kunna lahu muqrinin",
+        "Rabbana hab lana min azwajina qurrati a'yun"
       ),
       optionsAr = listOf(
-        "رب زدني علماً",
-        "حسبنا الله ونعم الوكيل",
-        "سُبْحَانَ الَّذِي سَخَّرَ لَنَا هَٰذَا وَمَا كُنَّا لَهُ مُقْرِنِينَ * وَإِنَّا إِلَىٰ رَبِّنَا لَمُنقَلِبُونَ",
+        "ربنا لا تزغ قلوبنا بعد إذ هديتنا وهب لنا رحمة",
+        "حسبنا الله ونعم الوكيل نعم المولى ونعم النصير",
+        "سبحان الذي سخر لنا هذا وما كنا له مقرنين",
         "ربنا هب لنا من أزواجنا وذرياتنا قرة أعين"
       ),
       correctAnswerIndex = 2,
@@ -116,18 +116,18 @@ object AdhkarQuestionData {
       questionEn = "What is the morning and evening supplication seeking preservation of faith, health, and worldly well-being ('Afiyah)?",
       questionAr = "ما هو الدعاء النبوي الجامع الذي لم يكن يدعه النبي ﷺ صباحاً ومساءً لسؤال العافية في الدين والدنيا والأهل والمال؟",
       optionsEn = listOf(
-        "Allahumma barik lana feema razaqtana",
-        "Rabbi inni lima anzalta ilayya min khayrin faqeer",
-        "Allahumma tahhir qalbi minan-nifaq",
-        "Allahumma inni as'alukal-'afwa wal-'afiyah fi deeni wa dunya-ya wa ahli wa mali"
+        "Allahumma barik lana feema razaqtana wa qina adhaban-nar",
+        "Allahumma tahhir qalbi minan-nifaq wa amali minar-riya",
+        "Allahumma inni as'alukal-afwa wal-afiyah fid-dini wad-dunya",
+        "Allahumma inni as'alukal-huda wat-tuqa wal-afafa wal-ghina"
       ),
       optionsAr = listOf(
         "اللهم بارك لنا فيما رزقتنا وقنا عذاب النار",
-        "رب إني لما أنزلت إلي من خير فقير",
         "اللهم طهر قلبي من النفاق وعملي من الرياء",
-        "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي دِينِي وَدُنْيَايَ وَأَهْلِي وَمَالِي"
+        "اللهم إني أسألك العفو والعافية في ديني ودنياي",
+        "اللهم إني أسألك الهدى والتقى والعفاف والغنى"
       ),
-      correctAnswerIndex = 3,
+      correctAnswerIndex = 2,
       explanationEn = "Ibn Umar reported that the Messenger of Allah ﷺ never omitted this dua morning and evening: 'O Allah, I ask You for pardon and well-being in my religion, worldly affairs, family, and wealth.'",
       explanationAr = "كان النبي ﷺ لا يدع هذه الكلمات حين يمسي وحين يصبح: {اللهم إني أسألك العافية في الدنيا والآخرة، اللهم إني أسألك العفو والعافية في ديني ودنياي وأهلي ومالي...}.",
       category = QuizCategory.ADHKAR,
@@ -141,16 +141,16 @@ object AdhkarQuestionData {
       questionEn = "What dua is recited upon waking up from sleep in the morning?",
       questionAr = "ما هو الذكر النبوي المأثور الذي يستفتح به المسلم يومه فور استيقاظه من النوم؟",
       optionsEn = listOf(
-        "Bismika Allahumma amutu wa ahya",
-        "Alhamdulillahil-ladhi ahyana ba'da ma amatana wa ilayhin-nushoor",
+        "Bismika Allahumma amutu wa ahya fi hafizika",
+        "Alhamdulillahil-ladhi ahyana ba'da ma amatana",
         "Alhamdulillahil-ladhi at'amana wa saqana",
-        "Subhanaka Allahumma wa bihamdika ashhadu alla ilaha illa Anta"
+        "Subhanaka Allahumma ashhadu alla ilaha illa Anta"
       ),
       optionsAr = listOf(
-        "باسمك اللهم أموت وأحيا",
-        "الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ",
+        "باسمك اللهم أموت وأحيا يا رب العالمين",
+        "الحمد لله الذي أحيانا بعد ما أماتنا وإليه النشور",
         "الحمد لله الذي أطعمنا وسقانا وكفانا وآوانا",
-        "سبحانك اللهم وبحمدك أشهد أن لا إله إلا أنت أستغفرك وأتوب إليك"
+        "سبحانك اللهم وبحمدك أستغفرك وأتوب إليك"
       ),
       correctAnswerIndex = 1,
       explanationEn = "Upon waking, the Prophet ﷺ used to say: 'Praise be to Allah Who brought us to life after causing us to die, and to Him is the ultimate resurrection.'",
@@ -166,18 +166,18 @@ object AdhkarQuestionData {
       questionEn = "What is the Dua al-Karb (Supplication for distress and hardship) narrated by Ibn Abbas in Bukhari and Muslim?",
       questionAr = "ما هو (دعاء الكرب) العظيم الذي كان النبي ﷺ يلهج به عند الشدائد والأزمات؟",
       optionsEn = listOf(
+        "La ilaha illallahul-Adheemul-Haleem Rabbul-Arsh",
         "Allahumma la sahla illa ma ja'altahu sahla",
-        "HasbiyAllahu la ilaha illa Huwa 'alayhi tawakkaltu",
-        "La ilaha illallahul-'Adheemul-Haleem, La ilaha illallahu Rabbul-'Arshil-'Adheem...",
+        "HasbiyAllahu la ilaha illa Huwa alayhi tawakkaltu",
         "Ya Hayyu Ya Qayyoom bi-rahmatika astagheeth"
       ),
       optionsAr = listOf(
-        "اللهم لا سهل إلا ما جعلته سهلاً وأنت تجعل الحزن إذا شئت سهلاً",
-        "حسبي الله لا إله إلا هو عليه توكلت وهو رب العرش العظيم",
-        "لَا إِلَهَ إِلَّا اللَّهُ الْعَظِيمُ الْحَلِيمُ، لَا إِلَهَ إِلَّا اللَّهُ رَبُّ الْعَرْشِ الْعَظِيمِ...",
+        "لا إله إلا الله العظيم الحليم رب العرش العظيم",
+        "اللهم فرج همي واكشف كربي يا أرحم الراحمين",
+        "حسبي الله لا إله إلا هو عليه توكلت وهو رب العرش",
         "يا حي يا قيوم برحمتك أستغيث أصلح لي شأني كله"
       ),
-      correctAnswerIndex = 2,
+      correctAnswerIndex = 0,
       explanationEn = "The Prophet ﷺ used to say at times of grief and distress: 'There is no god but Allah, the Great, the Tolerant. There is no god but Allah, Lord of the Magnificent Throne...'",
       explanationAr = "كان النبي ﷺ يدعو عند الكرب: {لا إله إلا الله العظيم الحليم، لا إله إلا الله رب العرش العظيم، لا إله إلا الله رب السماوات ورب الأرض ورب العرش الكريم}.",
       category = QuizCategory.ADHKAR,
@@ -191,16 +191,16 @@ object AdhkarQuestionData {
       questionEn = "What is the closing supplication of any gathering (Kaffarat al-Majlis) that expiates idle talk during that assembly?",
       questionAr = "ما هو دعاء (كفارة المجلس) الذي يكفر ما قد يقع من لغو أو تقصير في الجلسات قبل الانصراف؟",
       optionsEn = listOf(
-        "Rabbana taqabbal minna innaka Antas-Sami'ul-'Aleem",
-        "Allahumma a'inna 'ala dhikrika wa shukrika",
-        "Jazakumullahu khayran katheera",
-        "Subhanaka Allahumma wa bihamdika, ash-hadu alla ilaha illa Anta, astaghfiruka wa atubu ilayk"
+        "Rabbana taqabbal minna innaka Antas-Sami'ul-Aleem",
+        "Allahumma a'inna ala dhikrika wa shukrika wa husni ibadatik",
+        "Subhana Rabbika Rabbil-Izzati amma yasifun",
+        "Subhanaka Allahumma wa bihamdika astaghfiruka wa atubu ilayk"
       ),
       optionsAr = listOf(
         "ربنا تقبل منا إنك أنت السميع العليم",
         "اللهم أعنا على ذكرك وشكرك وحسن عبادتك",
         "سبحان ربك رب العزة عما يصفون وسلام على المرسلين",
-        "سُبْحَانَكَ اللَّهُمَّ وَبِحَمْدِكَ، أَشْهَدُ أَنْ لَا إِلَهَ إِلَّا أَنْتَ، أَسْتَغْفِرُكَ وَأَتُوبُ إِلَيْكَ"
+        "سبحانك اللهم وبحمدك أستغفرك وأتوب إليك"
       ),
       correctAnswerIndex = 3,
       explanationEn = "The Prophet ﷺ said: 'Whoever sits in a gathering where there was much clamor and says before standing: Subhanaka Allahumma wa bihamdika..., whatever took place in that gathering will be forgiven for him.'",
@@ -217,14 +217,14 @@ object AdhkarQuestionData {
       questionAr = "ماذا يُسن للمسلم أن يسأل ربه إذا سمع صياح الديكة بالليل أو الصباح؟",
       optionsEn = listOf(
         "Seek refuge from the devil",
-        "Ask Allah for His bounty, for it has seen an angel",
+        "Ask Allah for His bounty",
         "Remain completely silent",
-        "Say 'Subhanal-Malikil-Quddus'"
+        "Say Subhanal-Malikil-Quddus"
       ),
       optionsAr = listOf(
         "يتعوذ بالله من الشيطان الرجيم",
-        "يسأل الله من فضله لأنها رأت مَلَكاً",
-        "يسكت تماماً ولا يذكر شيئاً",
+        "يسأل الله من فضله وكرمه",
+        "يلتزم الصمت ولا ينطق بكلمة",
         "يقول سبحان الملك القدوس"
       ),
       correctAnswerIndex = 1,
@@ -241,18 +241,18 @@ object AdhkarQuestionData {
       questionEn = "What are the two light phrases on the tongue, heavy on the Scales, beloved to the Most Merciful?",
       questionAr = "ما هما الكلمتان الخفيفتان على اللسان، الثقيلتان في الميزان، الحبيبتان إلى الرحمن كما في ختام صحيح البخاري؟",
       optionsEn = listOf(
-        "La ilaha illallah, Allahu Akbar",
-        "Alhamdulillah, Astaghfirullah",
-        "SubhanAllahi wa bihamdih, SubhanAllahil-'Adheem",
-        "La hawla wa la quwwata illa billah"
+        "SubhanAllahi wa bihamdih, SubhanAllahil-Adheem",
+        "La ilaha illallah wahdahu, Allahu Akbar Kabira",
+        "Alhamdulillahi hamdan katheeran, Astaghfirullah",
+        "La hawla wa la quwwata illa billahil-Azim"
       ),
       optionsAr = listOf(
-        "لا إله إلا الله، والله أكبر",
-        "الحمد لله، وأستغفر الله",
-        "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ، سُبْحَانَ اللَّهِ الْعَظِيمِ",
+        "سبحان الله وبحمده، سبحان الله العظيم",
+        "لا إله إلا الله وحده، والله أكبر",
+        "الحمد لله رب العالمين، وأستغفر الله العظيم",
         "لا حول ولا قوة إلا بالله العلي العظيم"
       ),
-      correctAnswerIndex = 2,
+      correctAnswerIndex = 0,
       explanationEn = "The concluding Hadith of Sahih Al-Bukhari states: 'Two words are light on the tongue, heavy on the Scale, beloved to the Most Merciful: SubhanAllahi wa bihamdih, SubhanAllahil-'Adheem.'",
       explanationAr = "ختم الإمام البخاري صحيحه بالحديث الشريف: {كلمتان خفيفتان على اللسان ثقيلتان في الميزان حبيبتان إلى الرحمن: سبحان الله وبحمده سبحان الله العظيم}.",
       category = QuizCategory.ADHKAR,
@@ -266,16 +266,16 @@ object AdhkarQuestionData {
       questionEn = "What is the supplication when visiting graves to greet the deceased believers and remind oneself of the hereafter?",
       questionAr = "ما هو السلام الشرعي والدعاء المأثور عند زيارة القبور والسلام على أهلها من المؤمنين؟",
       optionsEn = listOf(
-        "Rabbana la tuzigh quloobana",
-        "Allahumma a'inna 'ala sukratil-mawt",
-        "Allahumma inni a'udhu bika min fitnatil-qabr",
-        "As-salamu 'alaykum ahlad-diyari minal-mu'mineena wal-muslimeen..."
+        "Rabbana la tuzigh quloobana ba'da idh hadaytana",
+        "Allahumma a'inna ala dhikril-mawt wal-akhira",
+        "Allahumma inni a'udhu bika min adhabil-qabr",
+        "As-salamu alaykum ahlad-diyari minal-mu'minin"
       ),
       optionsAr = listOf(
         "ربنا لا تزغ قلوبنا بعد إذ هديتنا",
-        "اللهم أعنا على سكرات الموت",
-        "اللهم إني أعوذ بك من فتنة القبر وعذاب القبر",
-        "السَّلَامُ عَلَيْكُمْ أَهْلَ الدِّيَارِ مِنَ الْمُؤْمِنِينَ وَالْمُسْلِمِينَ، وَإِنَّا إِنْ شَاءَ اللَّهُ بِكُمْ لَاحِقُونَ..."
+        "اللهم أعنا على سكرات الموت والأهوال",
+        "اللهم إني أعوذ بك من عذاب القبر",
+        "السلام عليكم أهل الديار من المؤمنين"
       ),
       correctAnswerIndex = 3,
       explanationEn = "The Prophet ﷺ taught companions when visiting the graveyard to say: 'Peace be upon you, O inhabitants of the abodes among believers and Muslims. If Allah wills, we will join you...'",
@@ -291,16 +291,16 @@ object AdhkarQuestionData {
       questionEn = "What is the virtue of reciting Ayat al-Kursi (2:255) before going to sleep at night?",
       questionAr = "ما هو الفضل الثابت لمن قرأ آية الكرسي حين يأوي إلى فراشه ليلاً كما ورد في حديث أبي هريرة؟",
       optionsEn = listOf(
-        "He will not have to pray Fajr",
-        "He will receive immediate gold",
-        "A protector from Allah remains with him and no devil can approach him until morning",
+        "Fasting next day becomes recommended",
+        "Great worldly wealth arrives swiftly",
+        "A divine guardian protects until morning",
         "It replaces reciting Surah Al-Fatihah"
       ),
       optionsAr = listOf(
-        "تسقط عنه صلاة الفجر",
-        "تُضاعف له أمواله الدنيوية فوراً",
-        "لا يزال عليه من الله حافظ ولا يقربه شيطان حتى يُصبح",
-        "تجزئ عن قراءة الفاتحة"
+        "يستحب له صيام اليوم التالي",
+        "تضاعف له أمواله في الصباح",
+        "يحفظه الله ولا يقربه شيطان",
+        "تجزئ عن قراءة سورة الفاتحة"
       ),
       correctAnswerIndex = 2,
       explanationEn = "In Sahih Al-Bukhari, Abu Hurairah reported that whoever recites Ayat al-Kursi before sleeping: 'A guardian from Allah will remain over you, and no devil will come near you until morning.'",
@@ -316,15 +316,15 @@ object AdhkarQuestionData {
       questionEn = "What did the Prophet ﷺ teach Mu'adh ibn Jabal (may Allah be pleased with him) never to omit at the end of every prayer?",
       questionAr = "ما هي الوصية الجامعة التي أوصى بها النبي ﷺ معاذ بن جبل ألا يدعها دبر كل صلاة لحبه له؟",
       optionsEn = listOf(
-        "Allahumma ajirni minan-nar",
-        "Allahumma a'inni 'ala dhikrika wa shukrika wa husni 'ibadatik",
-        "Rabbi hab li hukma",
-        "Allahumma arzuqni shahadah"
+        "Allahumma ajirni minan-nar wa adkhilnil-jannah",
+        "Allahumma a'inni ala dhikrika wa shukrika wa husni ibadatik",
+        "Rabbi hab li hukman wa alhiqni bis-salihin",
+        "Allahumma arzuqni shahadatan fi sabilika"
       ),
       optionsAr = listOf(
-        "اللهم أجرني من النار سبع مرات",
-        "اللَّهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ",
-        "رب هب لي حكماً وألحقني بالصالحين",
+        "اللهم أجرني من النار وأدخلني الجنة",
+        "اللهم أعني على ذكرك وشكرك وحسن عبادتك",
+        "رب هب لي السداد وألحقني بالصالحين",
         "اللهم ارزقني الشهادة في سبيلك"
       ),
       correctAnswerIndex = 1,
@@ -341,16 +341,16 @@ object AdhkarQuestionData {
       questionEn = "What is the comprehensive Dua that the Prophet ﷺ made most frequently, asking for goodness in this world and the hereafter?",
       questionAr = "ما هو أكثر دعاء كان النبي ﷺ يلهج به في طوافه ودبر صلواته وهو أجمع دعاء في القرآن؟",
       optionsEn = listOf(
-        "Rabbana atina fid-dunya hasanatan wa fil-akhirati hasanatan wa qina 'adhaban-nar",
+        "Rabbana atina fid-dunya hasanatan wa fil-akhirati hasanah",
         "Rabbi inni lima anzalta ilayya min khayrin faqeer",
         "Rabbij'alni muqeemas-salati wa min dhurriyyati",
-        "Allahumma inni as'aluka huda wat-tuqa wal-'afafa wal-ghina"
+        "Allahumma inni as'alukal-huda wat-tuqa wal-ghina"
       ),
       optionsAr = listOf(
-        "رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ",
+        "ربنا آتنا في الدنيا حسنة وفي الآخرة حسنة",
         "رب إني لما أنزلت إلي من خير فقير",
-        "رب اجعلني مقيم الصلاة ومن ذريتي ربنا وتقبل دعاء",
-        "اللهم إني أسألك الهدى والتقى والعفاف والغنى"
+        "رب اجعلني مقيم الصلاة ومن ذريتي",
+        "اللهم إني أسألك الهدى والتقى والغنى"
       ),
       correctAnswerIndex = 0,
       explanationEn = "Anas (may Allah be pleased with him) reported: 'The supplication the Prophet ﷺ made most frequently was: Rabbana atina fid-dunya hasanah wa fil-akhirati hasanah wa qina 'adhaban-nar' (2:201).",

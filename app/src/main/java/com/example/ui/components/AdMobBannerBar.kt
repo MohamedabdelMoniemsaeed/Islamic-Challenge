@@ -36,7 +36,8 @@ object AdMobConfig {
 @Composable
 fun AdMobBannerBar(
   modifier: Modifier = Modifier,
-  adUnitId: String = AdMobConfig.BANNER_AD_UNIT_ID
+  adUnitId: String = AdMobConfig.BANNER_AD_UNIT_ID,
+  includeNavigationBarsPadding: Boolean = true
 ) {
   val lifecycleOwner = LocalLifecycleOwner.current
   var currentAdView by remember { mutableStateOf<AdView?>(null) }
@@ -67,7 +68,7 @@ fun AdMobBannerBar(
   Surface(
     modifier = modifier
       .fillMaxWidth()
-      .navigationBarsPadding()
+      .then(if (includeNavigationBarsPadding) Modifier.navigationBarsPadding() else Modifier)
       .testTag("admob_banner_bar"),
     color = MaterialTheme.colorScheme.surface,
     tonalElevation = 2.dp
