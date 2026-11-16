@@ -229,4 +229,38 @@ class BackgroundAdhanAndSalawatTest {
     assertEquals("RIFF", String(salawatBytes.copyOfRange(0, 4)))
     assertEquals("WAVE", String(salawatBytes.copyOfRange(8, 12)))
   }
+
+  @Test
+  fun `daily reminder fires at most once per day and never immediately on schedule`() {
+    Shadows.shadowOf(context).grantPermissions(android.Manifest.permission.POST_NOTIFICATIONS)
+    notificationManager.saveNotificationPreferences(
+      notificationsEnabled = true,
+      hourlySalawatEnabled = false,
+      isArabic = true
+    )
+
+    val sysNotifMgr = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    val shadowNotifMgr = Shadows.shadowOf(sysNotifMgr)
+
+    // Scheduling daily reminder must NEVER fire a notification immediately
+    notificationManager.ensureDailyReminderScheduled()
+    assertEquals(0, shadowNotifMgr.allNotifications.size)
+
+    // First alarm delivery sends 1 daily notification and marks today as sent
+    val receiver = DailyReminderReceiver()
+    receiver.onReceive(context, Intent(context, DailyReminderReceiver::class.java))
+    assertEquals(1, shadowNotifMgr.allNotifications.size)
+    assertTrue(notificationManager.hasSentDailyReminderToday())
+
+    // Subsequent trigger on the same day must be skipped (still only 1 notification)
+    sysNotifMgr.cancelAll()
+    receiver.onReceive(context, Intent(context, DailyReminderReceiver::class.java))
+    assertEquals(0, shadowNotifMgr.allNotifications.size)
+
+    // Next scheduled daily alarm must be strictly tomorrow (> now + 60_000ms and tomorrow's day)
+    val scheduled = Shadows.shadowOf(alarmManager).scheduledAlarms.lastOrNull()
+    assertNotNull(scheduled)
+    @Suppress("DEPRECATION")
+    assertTrue(scheduled!!.triggerAtTime > System.currentTimeMillis() + 60_000L)
+  }
 }

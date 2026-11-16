@@ -110,7 +110,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
       com.example.core.widgets.HomeScreenWidgetHelper.updateAllHomeWidgets(getApplication())
 
       if (settings.notificationsEnabled) {
-        notificationManager.scheduleDailyReminder()
+        notificationManager.ensureDailyReminderScheduled()
       }
       if (settings.hourlySalawatEnabled) {
         notificationManager.ensureHourlySalawatScheduled()

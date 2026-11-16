@@ -20,6 +20,7 @@ class SalawatAlarmReceiver : BroadcastReceiver() {
 
     // Chain the next top-of-hour (:00) reminder immediately with a 60s guard against early clock wakeups
     notificationManager.scheduleHourlySalawatReminder(minDelayMillis = 60_000L)
+    com.example.core.widgets.HomeScreenWidgetHelper.updateAllHomeWidgets(context)
 
     val isArabic = notificationManager.isSavedArabic()
     notificationManager.sendSalawatNotification(isArabic)

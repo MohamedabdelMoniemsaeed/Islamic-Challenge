@@ -10,10 +10,13 @@ import com.example.core.adhan.PrayerTimeItem
 import com.example.core.adhan.PrayerTimesManager
 import com.example.core.notification.AppNotificationManager
 import com.example.core.notification.PrayerAlarmReceiver
+import android.widget.FrameLayout
 import com.example.core.widgets.HomeScreenWidgetHelper
 import com.example.core.widgets.HomeShortcutTarget
 import com.example.core.widgets.IslamicShortcutsWidgetProvider
 import com.example.core.widgets.PrayerTimesWidgetProvider
+import com.example.core.widgets.PrayerWidgetLayoutTier
+import com.example.core.widgets.ShortcutsWidgetLayoutTier
 import com.example.ui.navigation.Routes
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -98,36 +101,49 @@ class HomeWidgetsAndExactAdhanTest {
   }
 
   @Test
-  fun `PrayerTimesWidgetProvider builds non-null RemoteViews in Arabic and English`() {
-    notificationManager.saveNotificationPreferences(
-      notificationsEnabled = true,
-      hourlySalawatEnabled = true,
-      isArabic = true
-    )
-    val arViews = PrayerTimesWidgetProvider.buildRemoteViews(context)
-    assertNotNull(arViews)
-    assertEquals(R.layout.widget_prayer_times, arViews.layoutId)
+  fun `PrayerTimesWidgetProvider builds and inflates all responsive tiers cleanly`() {
+    val host = FrameLayout(context)
+    listOf(true, false).forEach { isAr ->
+      notificationManager.saveNotificationPreferences(
+        notificationsEnabled = true,
+        hourlySalawatEnabled = true,
+        isArabic = isAr
+      )
+      assertEquals(PrayerWidgetLayoutTier.MINI, PrayerTimesWidgetProvider.selectTierForSize(60, 60))
+      assertEquals(PrayerWidgetLayoutTier.COMPACT, PrayerTimesWidgetProvider.selectTierForSize(150, 70))
+      assertEquals(PrayerWidgetLayoutTier.MEDIUM, PrayerTimesWidgetProvider.selectTierForSize(250, 120))
+      assertEquals(PrayerWidgetLayoutTier.EXPANDED, PrayerTimesWidgetProvider.selectTierForSize(260, 220))
 
-    notificationManager.saveNotificationPreferences(
-      notificationsEnabled = true,
-      hourlySalawatEnabled = true,
-      isArabic = false
-    )
-    val enViews = PrayerTimesWidgetProvider.buildRemoteViews(context)
-    assertNotNull(enViews)
-    assertEquals(R.layout.widget_prayer_times, enViews.layoutId)
+      PrayerWidgetLayoutTier.entries.forEach { tier ->
+        val views = PrayerTimesWidgetProvider.buildRemoteViewsForTier(context, tier)
+        assertNotNull(views)
+        assertEquals(tier.layoutRes, views.layoutId)
+        val inflated = views.apply(context, host)
+        assertNotNull("Failed to inflate ${tier.name}", inflated)
+      }
+    }
   }
 
   @Test
-  fun `IslamicShortcutsWidgetProvider builds non-null RemoteViews and targets valid routes`() {
+  fun `IslamicShortcutsWidgetProvider builds and inflates all responsive tiers cleanly`() {
+    val host = FrameLayout(context)
     notificationManager.saveNotificationPreferences(
       notificationsEnabled = true,
       hourlySalawatEnabled = true,
       isArabic = true
     )
-    val arViews = IslamicShortcutsWidgetProvider.buildRemoteViews(context)
-    assertNotNull(arViews)
-    assertEquals(R.layout.widget_islamic_shortcuts, arViews.layoutId)
+
+    assertEquals(ShortcutsWidgetLayoutTier.MINI, IslamicShortcutsWidgetProvider.selectTierForSize(60, 60))
+    assertEquals(ShortcutsWidgetLayoutTier.GRID_2X2, IslamicShortcutsWidgetProvider.selectTierForSize(140, 130))
+    assertEquals(ShortcutsWidgetLayoutTier.BAR_4X1, IslamicShortcutsWidgetProvider.selectTierForSize(260, 60))
+
+    ShortcutsWidgetLayoutTier.entries.forEach { tier ->
+      val views = IslamicShortcutsWidgetProvider.buildRemoteViewsForTier(context, tier)
+      assertNotNull(views)
+      assertEquals(tier.layoutRes, views.layoutId)
+      val inflated = views.apply(context, host)
+      assertNotNull("Failed to inflate ${tier.name}", inflated)
+    }
 
     val targets = HomeShortcutTarget.entries
     assertEquals(4, targets.size)

@@ -877,9 +877,9 @@ fun SettingsScreen(
                   )
                   Text(
                     text = if (isAr) {
-                      "أضف مواقيت الصلاة وأيقونات مصغّرة للقبلة والأذكار والتحدي على شاشة الهاتف من الخارج"
+                      "أضف مواقيت الصلاة (مع العدّ التنازلي والشروق والقبلة) وأيقونات مصغّرة مرنة قابلة للتكبير والتصغير على شاشة الهاتف"
                     } else {
-                      "Pin live Prayer Times & mini shortcut icons directly onto your phone Home Screen"
+                      "Pin flexible resizable Prayer Times (with live countdown, Sunrise & Qiblah) and mini shortcut icons to your Home Screen"
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant

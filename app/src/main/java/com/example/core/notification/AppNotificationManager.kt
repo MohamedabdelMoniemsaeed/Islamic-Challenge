@@ -53,6 +53,8 @@ class AppNotificationManager(private val context: Context) {
     private const val KEY_HOURLY_SALAWAT_ENABLED = "hourly_salawat_enabled"
     private const val KEY_IS_ARABIC = "is_arabic"
     private const val KEY_NEXT_SALAWAT_TRIGGER_MS = "next_salawat_trigger_ms"
+    private const val KEY_LAST_DAILY_NOTIF_DATE = "last_daily_notif_date"
+    private const val KEY_NEXT_DAILY_TRIGGER_MS = "next_daily_trigger_ms"
   }
 
   private val notificationManager =
@@ -599,6 +601,39 @@ class AppNotificationManager(private val context: Context) {
     sendNotification(title, message, NOTIFICATION_ID_CHALLENGE)
   }
 
+  private fun todayDateKey(nowMillis: Long = System.currentTimeMillis()): String {
+    val cal = Calendar.getInstance().apply { timeInMillis = nowMillis }
+    val y = cal.get(Calendar.YEAR)
+    val m = cal.get(Calendar.MONTH) + 1
+    val d = cal.get(Calendar.DAY_OF_MONTH)
+    return java.lang.String.format(java.util.Locale.US, "%04d-%02d-%02d", y, m, d)
+  }
+
+  fun hasSentDailyReminderToday(nowMillis: Long = System.currentTimeMillis()): Boolean {
+    return notifPrefs.getString(KEY_LAST_DAILY_NOTIF_DATE, null) == todayDateKey(nowMillis)
+  }
+
+  fun markDailyReminderSentToday(nowMillis: Long = System.currentTimeMillis()) {
+    notifPrefs.edit()
+      .putString(KEY_LAST_DAILY_NOTIF_DATE, todayDateKey(nowMillis))
+      .apply()
+  }
+
+  fun ensureDailyReminderScheduled() {
+    if (!isNotificationsEnabled()) return
+    val intent = Intent(context, DailyReminderReceiver::class.java)
+    val existing = PendingIntent.getBroadcast(
+      context,
+      ALARM_REQUEST_CODE,
+      intent,
+      PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+    )
+    val nextTrigger = notifPrefs.getLong(KEY_NEXT_DAILY_TRIGGER_MS, 0L)
+    if (existing == null || nextTrigger <= System.currentTimeMillis()) {
+      scheduleDailyReminder()
+    }
+  }
+
   fun scheduleDailyReminder(hour: Int = 12, minute: Int = 0) {
     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
     val intent = Intent(context, DailyReminderReceiver::class.java)
@@ -609,29 +644,36 @@ class AppNotificationManager(private val context: Context) {
       PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
 
+    val now = System.currentTimeMillis()
+    val sentToday = hasSentDailyReminderToday(now)
     val calendar = Calendar.getInstance().apply {
+      timeInMillis = now
       set(Calendar.HOUR_OF_DAY, hour)
       set(Calendar.MINUTE, minute)
       set(Calendar.SECOND, 0)
       set(Calendar.MILLISECOND, 0)
-      if (before(Calendar.getInstance())) {
+      if (timeInMillis <= now + 60_000L || sentToday) {
         add(Calendar.DAY_OF_YEAR, 1)
       }
     }
 
+    notifPrefs.edit()
+      .putLong(KEY_NEXT_DAILY_TRIGGER_MS, calendar.timeInMillis)
+      .apply()
+
     try {
-      alarmManager.setInexactRepeating(
+      alarmManager.setAndAllowWhileIdle(
         AlarmManager.RTC_WAKEUP,
         calendar.timeInMillis,
-        AlarmManager.INTERVAL_DAY,
         pendingIntent
       )
     } catch (_: Exception) {
-      // Inexact repeating is standard and safe on all API levels
+      // Safe on all API levels
     }
   }
 
   fun cancelDailyReminder() {
+    notifPrefs.edit().remove(KEY_NEXT_DAILY_TRIGGER_MS).apply()
     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
     val intent = Intent(context, DailyReminderReceiver::class.java)
     val pendingIntent = PendingIntent.getBroadcast(
@@ -641,5 +683,6 @@ class AppNotificationManager(private val context: Context) {
       PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
     alarmManager.cancel(pendingIntent)
+    pendingIntent.cancel()
   }
 }

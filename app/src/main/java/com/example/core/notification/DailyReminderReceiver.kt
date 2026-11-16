@@ -21,8 +21,13 @@ class DailyReminderReceiver : BroadcastReceiver() {
       }
       else -> {
         if (!notificationManager.isNotificationsEnabled()) return
+        if (notificationManager.hasSentDailyReminderToday()) {
+          notificationManager.scheduleDailyReminder()
+          return
+        }
 
-        val reminders = listOf(
+        val isArabic = notificationManager.isSavedArabic()
+        val remindersAr = listOf(
           Pair(
             "🌙 تحدي المعرفة الإسلامية",
             "حان وقت اختبار معلوماتك الدينية اليوم! أجب عن الأسئلة واكسب النقاط والعملات."
@@ -40,15 +45,30 @@ class DailyReminderReceiver : BroadcastReceiver() {
             "تعلّم وتفقّه في دينك اليوم من خلال أسئلة التحدي الإسلامي."
           )
         )
+        val remindersEn = listOf(
+          Pair(
+            "🌙 Islamic Knowledge Challenge",
+            "Time for your daily Islamic quiz! Answer questions to earn coins and XP."
+          ),
+          Pair(
+            "⭐ Don't Miss Today's Challenge!",
+            "Keep your daily winning streak alive and answer today's questions."
+          ),
+          Pair(
+            "🎁 Your Daily Reward is Waiting!",
+            "Open the app today to claim your daily coins and XP reward."
+          )
+        )
 
-        val selected = reminders.random()
+        val selected = if (isArabic) remindersAr.random() else remindersEn.random()
         notificationManager.sendNotification(
           title = selected.first,
           message = selected.second,
           notificationId = AppNotificationManager.NOTIFICATION_ID_DAILY
         )
+        notificationManager.markDailyReminderSentToday()
 
-        // Ensure next reminder is scheduled
+        // Schedule tomorrow's single daily reminder
         notificationManager.scheduleDailyReminder()
       }
     }

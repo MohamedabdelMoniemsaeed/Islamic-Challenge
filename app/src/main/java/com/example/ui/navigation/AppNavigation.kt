@@ -292,11 +292,6 @@ fun AppNavigation(
         // 3. Home Screen
         composable(Routes.HOME) {
           val canClaim = mainViewModel.playerRepository.canClaimDailyReward(profile)
-          LaunchedEffect(canClaim, notificationsEnabled) {
-            if (canClaim && notificationsEnabled) {
-              mainViewModel.notificationManager.sendDailyRewardNotification(language == AppLanguage.ARABIC)
-            }
-          }
 
           HomeScreen(
             profile = profile,
