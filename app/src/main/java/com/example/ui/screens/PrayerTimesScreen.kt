@@ -58,6 +58,7 @@ import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.AlertDialog
@@ -124,6 +125,7 @@ import com.example.core.adhan.QiblahCalculator
 import com.example.core.localization.AppLanguage
 import com.example.core.permissions.DeviceAccessManager
 import com.example.core.permissions.DeviceAccessStatus
+import com.example.core.widgets.HomeScreenWidgetHelper
 import com.example.ui.theme.AmiriFontFamily
 import com.example.ui.theme.EmeraldDark
 import com.example.ui.theme.EmeraldDeep
@@ -365,7 +367,21 @@ fun PrayerTimesScreen(
               }
               onHourlySalawatToggle(enabled)
             },
-            onTestSalawat = onTestSalawatReminder
+            onTestSalawat = onTestSalawatReminder,
+            onPinHomeWidget = {
+              val ok = HomeScreenWidgetHelper.requestPinPrayerTimesWidget(context)
+              scope.launch {
+                snackbarHostState.showSnackbar(
+                  if (ok) {
+                    if (isAr) "أكّد الإضافة لوضع ويدجت مواقيت الصلاة على الشاشة الرئيسية"
+                    else "Confirm the launcher prompt to place the Prayer Times widget on Home Screen"
+                  } else {
+                    if (isAr) "اضغط مطولاً على شاشة الهاتف ← الأدوات (Widgets) ← تحدي المعرفة الإسلامية لإضافة الويدجت"
+                    else "Long-press Home Screen -> Widgets -> Islamic Challenge to add the widget"
+                  }
+                )
+              }
+            }
           )
         }
 
@@ -1537,7 +1553,8 @@ private fun BackgroundAdhanAndSalawatCard(
   onRequestGpsLocation: () -> Unit = {},
   onOpenInternetSettings: () -> Unit = {},
   onToggleHourlySalawat: (Boolean) -> Unit,
-  onTestSalawat: () -> Unit
+  onTestSalawat: () -> Unit,
+  onPinHomeWidget: () -> Unit = {}
 ) {
   Card(
     shape = RoundedCornerShape(20.dp),
@@ -1666,6 +1683,30 @@ private fun BackgroundAdhanAndSalawatCard(
               )
             }
           }
+        }
+      } else if (autoPlayAdhan) {
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          modifier = Modifier.fillMaxWidth()
+        ) {
+          Icon(
+            imageVector = Icons.Filled.CheckCircle,
+            contentDescription = null,
+            tint = EmeraldPrimary,
+            modifier = Modifier.size(16.dp)
+          )
+          Spacer(modifier = Modifier.width(6.dp))
+          Text(
+            text = if (isAr) {
+              "منبّه الأذان الدقيق مُفعّل — ينطلق في الموعد بالثانية مع تجهيز الصوت مسبقاً"
+            } else {
+              "Exact AlarmClock Adhan active — triggers on the exact second with pre-cached audio"
+            },
+            style = MaterialTheme.typography.labelSmall,
+            color = EmeraldPrimary,
+            fontWeight = FontWeight.SemiBold
+          )
         }
       }
 
@@ -1823,6 +1864,33 @@ private fun BackgroundAdhanAndSalawatCard(
             color = EmeraldPrimary
           )
         }
+      }
+
+      Spacer(modifier = Modifier.height(12.dp))
+      HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
+      Spacer(modifier = Modifier.height(12.dp))
+
+      FilledTonalButton(
+        onClick = onPinHomeWidget,
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier
+          .fillMaxWidth()
+          .height(48.dp)
+          .testTag("prayer_pin_home_widget_btn")
+      ) {
+        Icon(
+          imageVector = Icons.Filled.Widgets,
+          contentDescription = null,
+          tint = EmeraldPrimary,
+          modifier = Modifier.size(18.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+          text = if (isAr) "إضافة ويدجت مواقيت الصلاة للشاشة الرئيسية" else "Pin Prayer Times Widget to Home Screen",
+          fontWeight = FontWeight.Bold,
+          fontSize = 13.sp,
+          color = EmeraldPrimary
+        )
       }
     }
   }

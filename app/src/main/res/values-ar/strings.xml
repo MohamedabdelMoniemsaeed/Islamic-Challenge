@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">التحدي الإسلامي</string>
+    <string name="widget_prayer_desc">الصلاة القادمة ومواقيت الصلوات الخمس مباشرة على شاشة الهاتف</string>
+    <string name="widget_shortcuts_desc">أيقونات مصغرة سريعة للمواقيت والقبلة والأذكار والتحدي</string>
+    <string name="shortcut_prayer_short">مواقيت الصلاة</string>
+    <string name="shortcut_prayer_long">مواقيت الصلاة والأذان والقبلة</string>
+    <string name="shortcut_adhkar_short">الأذكار</string>
+    <string name="shortcut_adhkar_long">الأذكار والمسبحة الإلكترونية</string>
+    <string name="shortcut_quiz_short">التحدي</string>
+    <string name="shortcut_quiz_long">مسابقات التحدي الإسلامي</string>
 </resources>

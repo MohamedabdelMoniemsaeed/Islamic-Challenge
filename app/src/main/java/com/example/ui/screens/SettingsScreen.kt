@@ -25,9 +25,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.AddToHomeScreen
 import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.BatteryChargingFull
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.MusicNote
@@ -39,6 +44,7 @@ import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Vibration
+import androidx.compose.material.icons.filled.Widgets
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.AlertDialog
@@ -90,6 +96,8 @@ import com.example.BuildConfig
 import com.example.core.localization.AppLanguage
 import com.example.core.localization.LocalizationManager
 import com.example.core.permissions.DeviceAccessManager
+import com.example.core.widgets.HomeScreenWidgetHelper
+import com.example.core.widgets.HomeShortcutTarget
 import com.example.ui.theme.EmeraldDark
 import com.example.ui.theme.EmeraldPrimary
 import kotlinx.coroutines.launch
@@ -828,6 +836,190 @@ fun SettingsScreen(
                   testTag = "perm_hub_battery_btn",
                   onActionClick = { DeviceAccessManager.openBatteryOptimizationSettings(context) }
                 )
+              }
+            }
+          }
+        }
+
+        // 4c. Home Screen Mini Icons & Widgets (Outside App)
+        item {
+          val showPinFeedback: (Boolean, String) -> Unit = { accepted, label ->
+            scope.launch {
+              snackbarHostState.showSnackbar(
+                if (accepted) {
+                  if (isAr) "أكّد الإضافة من نافذة شاشة الهاتف لوضع «$label» على الشاشة الرئيسية"
+                  else "Confirm the launcher prompt to place \"$label\" on your Home Screen"
+                } else {
+                  if (isAr) "اضغط مطولاً على شاشة الهاتف ← الأدوات (Widgets) ← تحدي المعرفة الإسلامية لإضافة «$label»"
+                  else "Long-press your phone Home Screen -> Widgets -> Islamic Challenge to add \"$label\""
+                }
+              )
+            }
+          }
+
+          Card(
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+            modifier = Modifier
+              .fillMaxWidth()
+              .testTag("home_widgets_card")
+          ) {
+            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+              Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(imageVector = Icons.Filled.Widgets, contentDescription = null, tint = EmeraldPrimary)
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                  Text(
+                    text = if (isAr) "أيقونات وويدجت الشاشة الرئيسية" else "Home Screen Widgets & Mini Icons",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                  )
+                  Text(
+                    text = if (isAr) {
+                      "أضف مواقيت الصلاة وأيقونات مصغّرة للقبلة والأذكار والتحدي على شاشة الهاتف من الخارج"
+                    } else {
+                      "Pin live Prayer Times & mini shortcut icons directly onto your phone Home Screen"
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                  )
+                }
+              }
+
+              HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+
+              Button(
+                onClick = {
+                  val label = if (isAr) "ويدجت مواقيت الصلاة" else "Prayer Times Widget"
+                  val ok = HomeScreenWidgetHelper.requestPinPrayerTimesWidget(context)
+                  showPinFeedback(ok, label)
+                },
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = EmeraldPrimary),
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .height(48.dp)
+                  .testTag("pin_prayer_widget_btn")
+              ) {
+                Icon(imageVector = Icons.Filled.AccessTime, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                  text = if (isAr) "إضافة ويدجت مواقيت الصلاة للشاشة الرئيسية" else "Add Prayer Times Widget to Home Screen",
+                  fontWeight = FontWeight.Bold,
+                  fontSize = 13.sp
+                )
+              }
+
+              OutlinedButton(
+                onClick = {
+                  val label = if (isAr) "شريط الاختصارات المصغّرة" else "Quick Shortcuts Widget"
+                  val ok = HomeScreenWidgetHelper.requestPinShortcutsWidget(context)
+                  showPinFeedback(ok, label)
+                },
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .height(48.dp)
+                  .testTag("pin_shortcuts_widget_btn")
+              ) {
+                Icon(
+                  imageVector = Icons.Filled.AddToHomeScreen,
+                  contentDescription = null,
+                  tint = EmeraldPrimary,
+                  modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                  text = if (isAr) "إضافة شريط الاختصارات المصغّرة (٤ أيقونات)" else "Add Quick 4-Icon Shortcuts Widget",
+                  fontWeight = FontWeight.Bold,
+                  fontSize = 13.sp,
+                  color = EmeraldPrimary
+                )
+              }
+
+              Text(
+                text = if (isAr) "أو أضف أيقونة مصغّرة مستقلة (١×١):" else "Or pin a standalone 1×1 mini icon:",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+              )
+
+              val targets = HomeShortcutTarget.entries
+              Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+              ) {
+                targets.take(2).forEach { target ->
+                  val iconVec = when (target) {
+                    HomeShortcutTarget.PRAYER_TIMES -> Icons.Filled.AccessTime
+                    HomeShortcutTarget.QIBLAH -> Icons.Filled.Explore
+                    HomeShortcutTarget.ADHKAR_TASBIH -> Icons.Filled.AutoAwesome
+                    HomeShortcutTarget.QUIZ_CHALLENGE -> Icons.Filled.Category
+                  }
+                  val label = if (isAr) target.labelAr else target.labelEn
+                  OutlinedButton(
+                    onClick = {
+                      val ok = HomeScreenWidgetHelper.requestPinShortcutIcon(context, target, isAr)
+                      showPinFeedback(ok, label)
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
+                    modifier = Modifier
+                      .weight(1f)
+                      .height(48.dp)
+                      .testTag("pin_shortcut_${target.id}_btn")
+                  ) {
+                    Icon(imageVector = iconVec, contentDescription = null, tint = EmeraldPrimary, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                      text = label,
+                      fontSize = 12.sp,
+                      fontWeight = FontWeight.SemiBold,
+                      maxLines = 1,
+                      overflow = TextOverflow.Ellipsis,
+                      color = MaterialTheme.colorScheme.onSurface
+                    )
+                  }
+                }
+              }
+
+              Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+              ) {
+                targets.drop(2).forEach { target ->
+                  val iconVec = when (target) {
+                    HomeShortcutTarget.PRAYER_TIMES -> Icons.Filled.AccessTime
+                    HomeShortcutTarget.QIBLAH -> Icons.Filled.Explore
+                    HomeShortcutTarget.ADHKAR_TASBIH -> Icons.Filled.AutoAwesome
+                    HomeShortcutTarget.QUIZ_CHALLENGE -> Icons.Filled.Category
+                  }
+                  val label = if (isAr) target.labelAr else target.labelEn
+                  OutlinedButton(
+                    onClick = {
+                      val ok = HomeScreenWidgetHelper.requestPinShortcutIcon(context, target, isAr)
+                      showPinFeedback(ok, label)
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
+                    modifier = Modifier
+                      .weight(1f)
+                      .height(48.dp)
+                      .testTag("pin_shortcut_${target.id}_btn")
+                  ) {
+                    Icon(imageVector = iconVec, contentDescription = null, tint = EmeraldPrimary, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                      text = label,
+                      fontSize = 12.sp,
+                      fontWeight = FontWeight.SemiBold,
+                      maxLines = 1,
+                      overflow = TextOverflow.Ellipsis,
+                      color = MaterialTheme.colorScheme.onSurface
+                    )
+                  }
+                }
               }
             }
           }

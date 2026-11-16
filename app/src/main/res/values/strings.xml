@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">Islamic Challenge</string>
+    <string name="widget_prayer_desc">Next prayer countdown &amp; all 5 prayer times on your home screen</string>
+    <string name="widget_shortcuts_desc">Quick home screen icons for Prayer, Qiblah, Adhkar &amp; Quiz</string>
+    <string name="shortcut_prayer_short">Prayer Times</string>
+    <string name="shortcut_prayer_long">Prayer Times &amp; Adhan</string>
+    <string name="shortcut_adhkar_short">Adhkar</string>
+    <string name="shortcut_adhkar_long">Adhkar &amp; Digital Tasbih</string>
+    <string name="shortcut_quiz_short">Quiz</string>
+    <string name="shortcut_quiz_long">Islamic Knowledge Quiz</string>
 </resources>

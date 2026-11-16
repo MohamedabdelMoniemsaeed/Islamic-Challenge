@@ -10,17 +10,22 @@ class PrayerAlarmReceiver : BroadcastReceiver() {
   override fun onReceive(context: Context, intent: Intent?) {
     val notificationManager = AppNotificationManager(context)
 
-    // Immediately chain tomorrow's prayer alarm so Adhan keeps firing daily when closed
-    notificationManager.scheduleAllPrayerAlertsFromPrefs()
+    // Immediately chain tomorrow's prayer alarm with 60s early-wakeup guard so Adhan keeps firing daily on the dot
+    notificationManager.scheduleAllPrayerAlertsFromPrefs(skipJustTriggeredWithinMs = 60_000L)
+    com.example.core.widgets.HomeScreenWidgetHelper.updateAllHomeWidgets(context)
 
-    val prayerNameFallback = intent?.getStringExtra(EXTRA_PRAYER_NAME) ?: return
-    val prayerTimeFallback = intent.getStringExtra(EXTRA_PRAYER_TIME) ?: ""
-    val prayerNameAr = intent.getStringExtra(EXTRA_PRAYER_NAME_AR) ?: prayerNameFallback
-    val prayerNameEn = intent.getStringExtra(EXTRA_PRAYER_NAME_EN) ?: prayerNameFallback
-    val prayerTimeAr = intent.getStringExtra(EXTRA_PRAYER_TIME_AR) ?: prayerTimeFallback
-    val prayerTimeEn = intent.getStringExtra(EXTRA_PRAYER_TIME_EN) ?: prayerTimeFallback
-    val prayerOrdinal = intent.getIntExtra(EXTRA_PRAYER_ID, 0)
-    val isArabic = intent.getBooleanExtra(EXTRA_IS_ARABIC, notificationManager.isSavedArabic())
+    val safeIntent = intent ?: return
+    val prayerNameFallback = safeIntent.getStringExtra(EXTRA_PRAYER_NAME)
+      ?: safeIntent.getStringExtra(EXTRA_PRAYER_NAME_AR)
+      ?: safeIntent.getStringExtra(EXTRA_PRAYER_NAME_EN)
+      ?: return
+    val prayerTimeFallback = safeIntent.getStringExtra(EXTRA_PRAYER_TIME) ?: ""
+    val prayerNameAr = safeIntent.getStringExtra(EXTRA_PRAYER_NAME_AR) ?: prayerNameFallback
+    val prayerNameEn = safeIntent.getStringExtra(EXTRA_PRAYER_NAME_EN) ?: prayerNameFallback
+    val prayerTimeAr = safeIntent.getStringExtra(EXTRA_PRAYER_TIME_AR) ?: prayerTimeFallback
+    val prayerTimeEn = safeIntent.getStringExtra(EXTRA_PRAYER_TIME_EN) ?: prayerTimeFallback
+    val prayerOrdinal = safeIntent.getIntExtra(EXTRA_PRAYER_ID, 0)
+    val isArabic = safeIntent.getBooleanExtra(EXTRA_IS_ARABIC, notificationManager.isSavedArabic())
 
     val prayerPrefs = context.getSharedPreferences("prayer_times_prefs", Context.MODE_PRIVATE)
     val autoPlayAdhan = prayerPrefs.getBoolean("auto_play_adhan", true)

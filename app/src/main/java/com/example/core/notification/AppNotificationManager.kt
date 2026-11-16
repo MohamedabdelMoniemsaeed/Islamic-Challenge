@@ -16,11 +16,15 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.example.MainActivity
 import com.example.R
+import com.example.core.adhan.AdhanAudioCache
 import com.example.core.adhan.AsrJuristicMethod
 import com.example.core.adhan.CalculationMethod
 import com.example.core.adhan.PrayerName
 import com.example.core.adhan.PrayerTimeItem
 import com.example.core.adhan.PrayerTimesManager
+import com.example.core.permissions.DeviceAccessManager
+import com.example.core.widgets.HomeScreenWidgetHelper
+import com.example.ui.navigation.Routes
 import java.util.Calendar
 
 class AppNotificationManager(private val context: Context) {
@@ -185,6 +189,38 @@ class AppNotificationManager(private val context: Context) {
     } catch (_: Exception) {}
   }
 
+  /**
+   * Uses [AlarmManager.setAlarmClock] when exact alarm access is available so Prayer Adhan fires
+   * on the exact second without Doze or standby batching delays.
+   */
+  private fun schedulePrayerAlarmClock(
+    alarmManager: AlarmManager,
+    triggerAtMillis: Long,
+    pendingIntent: PendingIntent,
+    prayerOrdinal: Int
+  ) {
+    if (canScheduleExactAlarms()) {
+      try {
+        val showIntent = Intent(context, MainActivity::class.java).apply {
+          flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+          putExtra(HomeScreenWidgetHelper.EXTRA_OPEN_ROUTE, Routes.PRAYER_TIMES)
+        }
+        val showPendingIntent = PendingIntent.getActivity(
+          context,
+          PRAYER_ALARM_REQUEST_BASE + 100 + prayerOrdinal,
+          showIntent,
+          PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val alarmInfo = AlarmManager.AlarmClockInfo(triggerAtMillis, showPendingIntent)
+        alarmManager.setAlarmClock(alarmInfo, pendingIntent)
+        return
+      } catch (_: SecurityException) {
+        // Fall through to standard exact/inexact scheduler
+      } catch (_: Throwable) {}
+    }
+    scheduleAlarmWithBestPrecision(alarmManager, triggerAtMillis, pendingIntent)
+  }
+
   fun sendNotification(
     title: String,
     message: String,
@@ -323,7 +359,8 @@ class AppNotificationManager(private val context: Context) {
   fun schedulePrayerAlerts(
     prayers: List<PrayerTimeItem>,
     alertsEnabled: Map<PrayerName, Boolean>,
-    isArabic: Boolean
+    isArabic: Boolean,
+    skipJustTriggeredWithinMs: Long = 1_000L
   ) {
     val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
     val now = System.currentTimeMillis()
@@ -334,7 +371,7 @@ class AppNotificationManager(private val context: Context) {
       val enabled = alertsEnabled[todayItem.prayer] ?: true
       val requestCode = PRAYER_ALARM_REQUEST_BASE + todayItem.prayer.ordinal
 
-      val targetItem = if (todayItem.timestampMillis > now + 1_000L) {
+      val targetItem = if (todayItem.timestampMillis > now + skipJustTriggeredWithinMs) {
         todayItem
       } else {
         tomorrowPrayers.firstOrNull { it.prayer == todayItem.prayer }
@@ -357,7 +394,12 @@ class AppNotificationManager(private val context: Context) {
           intent,
           PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        scheduleAlarmWithBestPrecision(alarmManager, targetItem.timestampMillis, pendingIntent)
+        schedulePrayerAlarmClock(
+          alarmManager = alarmManager,
+          triggerAtMillis = targetItem.timestampMillis,
+          pendingIntent = pendingIntent,
+          prayerOrdinal = todayItem.prayer.ordinal
+        )
       } else {
         val cancelIntent = Intent(context, PrayerAlarmReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
@@ -369,13 +411,35 @@ class AppNotificationManager(private val context: Context) {
         alarmManager.cancel(pendingIntent)
       }
     }
+
+    precacheSelectedMuadhinIfOnline()
+    HomeScreenWidgetHelper.updateAllHomeWidgets(context)
+  }
+
+  private fun precacheSelectedMuadhinIfOnline() {
+    val prefs = context.getSharedPreferences(PRAYER_PREFS_NAME, Context.MODE_PRIVATE)
+    val savedMuadhinId = prefs.getString("selected_muadhin_id", null)
+    val muadhin = PrayerTimesManager.MUADHINS.find { it.id == savedMuadhinId }
+      ?: PrayerTimesManager.MUADHINS.first()
+    if (muadhin.isOfflineBuiltIn) return
+    if (AdhanAudioCache.getCachedAudioFile(context, muadhin) != null) return
+    if (!DeviceAccessManager.getStatus(context).isInternetConnected) return
+
+    Thread {
+      try {
+        AdhanAudioCache.resolveOrDownloadAudio(context.applicationContext, muadhin)
+      } catch (_: Throwable) {}
+    }.apply {
+      isDaemon = true
+      start()
+    }
   }
 
   /**
    * Recomputes today's and tomorrow's prayer schedule directly from saved SharedPreferences
    * and ensures all enabled prayer alarms are scheduled. Safe to call from BroadcastReceivers.
    */
-  fun scheduleAllPrayerAlertsFromPrefs() {
+  fun scheduleAllPrayerAlertsFromPrefs(skipJustTriggeredWithinMs: Long = 1_000L) {
     val prefs = context.getSharedPreferences(PRAYER_PREFS_NAME, Context.MODE_PRIVATE)
     val city = PrayerTimesManager.loadSavedCityLocation(prefs)
 
@@ -395,7 +459,12 @@ class AppNotificationManager(private val context: Context) {
       asrMethod = asr,
       nowMillis = System.currentTimeMillis()
     )
-    schedulePrayerAlerts(schedule.todayPrayers, savedAlerts, isSavedArabic())
+    schedulePrayerAlerts(
+      prayers = schedule.todayPrayers,
+      alertsEnabled = savedAlerts,
+      isArabic = isSavedArabic(),
+      skipJustTriggeredWithinMs = skipJustTriggeredWithinMs
+    )
   }
 
   private fun computeTomorrowPrayersFromPrefs(nowMillis: Long): List<PrayerTimeItem> {

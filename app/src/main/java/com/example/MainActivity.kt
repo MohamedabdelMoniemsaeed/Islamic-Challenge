@@ -1,5 +1,6 @@
 package com.example
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -10,8 +11,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.core.widgets.HomeScreenWidgetHelper
 import com.example.ui.navigation.AppNavigation
 import com.example.ui.theme.IslamicChallengeTheme
 import com.example.ui.viewmodels.MainViewModel
@@ -21,8 +24,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+
+  private val pendingRouteState = mutableStateOf<String?>(null)
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    pendingRouteState.value = intent?.getStringExtra(HomeScreenWidgetHelper.EXTRA_OPEN_ROUTE)
     CoroutineScope(Dispatchers.IO).launch {
       try {
         MobileAds.initialize(applicationContext) {}
@@ -40,9 +47,22 @@ class MainActivity : ComponentActivity() {
           modifier = Modifier.fillMaxSize(),
           color = MaterialTheme.colorScheme.surface
         ) {
-          AppNavigation(mainViewModel = mainViewModel)
+          AppNavigation(
+            mainViewModel = mainViewModel,
+            pendingDeepLinkRoute = pendingRouteState.value,
+            onConsumeDeepLinkRoute = { pendingRouteState.value = null }
+          )
         }
       }
+    }
+  }
+
+  override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    setIntent(intent)
+    val route = intent.getStringExtra(HomeScreenWidgetHelper.EXTRA_OPEN_ROUTE)
+    if (!route.isNullOrBlank()) {
+      pendingRouteState.value = route
     }
   }
 }

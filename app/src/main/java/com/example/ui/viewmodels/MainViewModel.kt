@@ -107,6 +107,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         hourlySalawatEnabled = settings.hourlySalawatEnabled,
         isArabic = settings.toLanguage() == AppLanguage.ARABIC
       )
+      com.example.core.widgets.HomeScreenWidgetHelper.updateAllHomeWidgets(getApplication())
 
       if (settings.notificationsEnabled) {
         notificationManager.scheduleDailyReminder()
@@ -121,6 +122,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     _language.value = lang
     audioManager.playClickFeedback(_soundEnabled.value, _vibrationEnabled.value, _soundVolume.value)
     persistSettings()
+    com.example.core.widgets.HomeScreenWidgetHelper.updateAllHomeWidgets(getApplication())
   }
 
   fun toggleSound(enabled: Boolean) {

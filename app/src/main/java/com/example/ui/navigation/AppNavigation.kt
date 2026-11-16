@@ -88,7 +88,9 @@ private data class BottomNavTab(
 @Composable
 fun AppNavigation(
   mainViewModel: MainViewModel,
-  navController: NavHostController = rememberNavController()
+  navController: NavHostController = rememberNavController(),
+  pendingDeepLinkRoute: String? = null,
+  onConsumeDeepLinkRoute: () -> Unit = {}
 ) {
   val language by mainViewModel.language.collectAsState()
   val profile by mainViewModel.playerProfile.collectAsState()
@@ -139,6 +141,37 @@ fun AppNavigation(
   val layoutDirection = if (isAr) LayoutDirection.Rtl else LayoutDirection.Ltr
   val currentBackStackEntry by navController.currentBackStackEntryAsState()
   val currentRoute = currentBackStackEntry?.destination?.route
+
+  val allowedDeepLinkRoutes = remember {
+    setOf(
+      Routes.HOME,
+      Routes.CATEGORIES,
+      Routes.PRAYER_TIMES,
+      Routes.ADHKAR_TASBIH,
+      Routes.PROFILE_STATS,
+      Routes.SETTINGS,
+      Routes.DAILY_REWARD
+    )
+  }
+
+  LaunchedEffect(pendingDeepLinkRoute, currentRoute) {
+    val target = pendingDeepLinkRoute
+    if (!target.isNullOrBlank() &&
+      target in allowedDeepLinkRoutes &&
+      currentRoute != null &&
+      currentRoute != Routes.SPLASH &&
+      currentRoute != Routes.ONBOARDING
+    ) {
+      if (currentRoute != target) {
+        navController.navigate(target) {
+          popUpTo(Routes.HOME) { saveState = true }
+          launchSingleTop = true
+          restoreState = true
+        }
+      }
+      onConsumeDeepLinkRoute()
+    }
+  }
 
   val bottomTabs = remember {
     listOf(
@@ -222,8 +255,17 @@ fun AppNavigation(
             language = language,
             onSplashFinished = {
               if (profile.hasCompletedOnboarding) {
+                val target = pendingDeepLinkRoute?.takeIf { it in allowedDeepLinkRoutes }
                 navController.navigate(Routes.HOME) {
                   popUpTo(Routes.SPLASH) { inclusive = true }
+                }
+                if (target != null && target != Routes.HOME) {
+                  navController.navigate(target) {
+                    launchSingleTop = true
+                  }
+                }
+                if (pendingDeepLinkRoute != null) {
+                  onConsumeDeepLinkRoute()
                 }
               } else {
                 navController.navigate(Routes.ONBOARDING) {

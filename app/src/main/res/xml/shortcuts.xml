@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_widget_prayer"
+        android:shortcutId="shortcut_prayer_times"
+        android:shortcutLongLabel="@string/shortcut_prayer_long"
+        android:shortcutShortLabel="@string/shortcut_prayer_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.example.MainActivity"
+            android:targetPackage="com.aistudio.islamicchallenge.qzwv">
+            <extra
+                android:name="extra_open_route"
+                android:value="prayer_times" />
+        </intent>
+    </shortcut>
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_widget_adhkar"
+        android:shortcutId="shortcut_adhkar_tasbih"
+        android:shortcutLongLabel="@string/shortcut_adhkar_long"
+        android:shortcutShortLabel="@string/shortcut_adhkar_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.example.MainActivity"
+            android:targetPackage="com.aistudio.islamicchallenge.qzwv">
+            <extra
+                android:name="extra_open_route"
+                android:value="adhkar_tasbih" />
+        </intent>
+    </shortcut>
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_widget_quiz"
+        android:shortcutId="shortcut_daily_quiz"
+        android:shortcutLongLabel="@string/shortcut_quiz_long"
+        android:shortcutShortLabel="@string/shortcut_quiz_short">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.example.MainActivity"
+            android:targetPackage="com.aistudio.islamicchallenge.qzwv">
+            <extra
+                android:name="extra_open_route"
+                android:value="categories" />
+        </intent>
+    </shortcut>
+</shortcuts>
